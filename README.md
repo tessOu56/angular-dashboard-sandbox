@@ -10,6 +10,8 @@
 
 這是一個模擬大型企業內部管理系統的專業後台應用程式，展示了現代 Angular 開發的最佳實踐和企業級功能實現。
 
+> **與 nx-playground 的關係**：本 repo 是 [`nx-playground`](https://github.com/tessOu56/nx-playground) monorepo 中 `apps/enterprise-admin` 的獨立部署版本（standalone extract），兩者程式碼同源。評估作品時請以 monorepo 為主體，本 repo 用於獨立展示與部署。
+
 ### 核心特色
 
 - **🔐 企業級權限控制 (RBAC)** - 完整的角色權限管理系統，含路由守衛、UI 層級權限控制
