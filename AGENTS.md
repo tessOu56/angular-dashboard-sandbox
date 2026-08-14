@@ -2,13 +2,15 @@
 
 ## Purpose
 
-Angular enterprise dashboard **mirror**. Development in **nx-playground** `apps/enterprise-admin`.  
-**Central plan**：`platform-command/planning/projects/angular-dashboard-sandbox.md`
+Angular enterprise dashboard **mirror**. Development in **nx-playground** `apps/enterprise-admin`.
+
+**Tickets are not tracked in this repo.**
 
 ## Before coding
 
-1. Prefer working in `C:\Users\11412616t\nx-playground\apps\enterprise-admin` instead of this repo.
+1. Prefer working in **nx-playground** `apps/enterprise-admin` instead of this repo.
 2. This repo may keep standalone Playwright E2E for practice.
+3. Read [`docs/PROJECT-PLAN.md`](docs/PROJECT-PLAN.md) for mirror rules.
 
 ## Quick start
 
@@ -21,6 +23,7 @@ pnpm start   # http://localhost:4200
 
 - New product features in this repo (use nx-playground)
 - Independent deploy
+- Committing `docs/platform-inbox/` (gitignored local-only path)
 
 ## Integration
 
