@@ -1,5 +1,6 @@
-import { Injectable, signal, computed, OnDestroy } from '@angular/core';
+import { Injectable, signal, computed, OnDestroy, inject } from '@angular/core';
 import { Event, EventType, EventSeverity } from '../../../shared/sdk';
+import { MockBackendService } from '../mock/mock-backend.service';
 
 export interface EventItem extends Event {
   id: string;
@@ -15,6 +16,7 @@ export interface EventItem extends Event {
 
 @Injectable({ providedIn: 'root' })
 export class EventsSseService implements OnDestroy {
+  private mockBackend = inject(MockBackendService);
   private stream?: EventSource;
   private _events = signal<ReadonlyArray<EventItem>>([]);
   private _isConnected = signal<boolean>(false);
@@ -23,7 +25,9 @@ export class EventsSseService implements OnDestroy {
 
   private readonly MAX_EVENTS = 2000; // Ring buffer size
   private readonly RECONNECT_DELAY = 5000; // 5 seconds
+  private readonly MOCK_INTERVAL_MS = 1500;
   private reconnectTimer?: number;
+  private stopMockStream?: () => void;
 
   // Computed signals
   public readonly events = this._events.asReadonly();
@@ -66,9 +70,8 @@ export class EventsSseService implements OnDestroy {
   start(url: string, options: { withCredentials?: boolean } = {}): void {
     this.stop(); // 停止現有連線
 
-    // Development mode: use mock events instead of real SSE connection
-    if (url.includes('localhost:3000')) {
-      console.warn('Development mode: SSE connection disabled. Using mock events.');
+    // Sandbox / local: mock SSE so the completeness slice works without a backend.
+    if (url === 'mock' || url.includes('localhost')) {
       this._isConnected.set(true);
       this._error.set(null);
       this.startMockEvents();
@@ -111,10 +114,10 @@ export class EventsSseService implements OnDestroy {
    * 開發模式：產生模擬事件
    */
   private startMockEvents(): void {
-    // Add some initial mock events
-    const mockEvents: EventItem[] = [
+    const seed = this.mockBackend.getEvents();
+    const fallback: EventItem[] = [
       {
-        id: '1',
+        id: 'seed-login',
         type: EventType.USER_LOGIN,
         timestamp: new Date().toISOString(),
         userId: '1',
@@ -125,7 +128,7 @@ export class EventsSseService implements OnDestroy {
         tags: ['authentication'],
       },
       {
-        id: '2',
+        id: 'seed-approval',
         type: EventType.APPROVAL_CREATED,
         timestamp: new Date(Date.now() - 300000).toISOString(),
         userId: '2',
@@ -136,7 +139,7 @@ export class EventsSseService implements OnDestroy {
         tags: ['approval', 'purchase'],
       },
       {
-        id: '3',
+        id: 'seed-flag',
         type: EventType.FLAG_PUBLISHED,
         timestamp: new Date(Date.now() - 600000).toISOString(),
         userId: '1',
@@ -146,9 +149,22 @@ export class EventsSseService implements OnDestroy {
         source: 'flag-service',
         tags: ['feature-flag', 'deployment'],
       },
+      {
+        id: 'seed-alert',
+        type: EventType.SYSTEM_ALERT,
+        timestamp: new Date(Date.now() - 120000).toISOString(),
+        details: { message: 'completeness-slice mock alert' },
+        severity: EventSeverity.CRITICAL,
+        source: 'monitoring-service',
+        tags: ['sse'],
+      },
     ];
 
-    mockEvents.forEach((event) => this.addEvent(event));
+    (seed.length > 0 ? seed : fallback).forEach((event) => this.addEvent(event as EventItem));
+
+    this.stopMockStream = this.mockBackend.simulateEventStream((event) => {
+      this.addEvent(event as EventItem);
+    }, this.MOCK_INTERVAL_MS);
   }
 
   /**
@@ -158,6 +174,11 @@ export class EventsSseService implements OnDestroy {
     if (this.stream) {
       this.stream.close();
       this.stream = undefined;
+    }
+
+    if (this.stopMockStream) {
+      this.stopMockStream();
+      this.stopMockStream = undefined;
     }
 
     this._isConnected.set(false);

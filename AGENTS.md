@@ -2,30 +2,35 @@
 
 ## Purpose
 
-Angular enterprise dashboard **mirror**. Development in **nx-playground** `apps/enterprise-admin`.
+Canonical Angular enterprise-admin **completeness slice** (T-2026-224).
 
-**Tickets are not tracked in this repo.**
+This is a B2B admin sandbox (RBAC, dual-control, SSE, audit, charts). It is **not** an event-cms replacement and must stay far below the React event stack.
+
+**Tickets are not tracked in this repo.** Planning SSOT: `platform-command`.
 
 ## Before coding
 
-1. Prefer working in **nx-playground** `apps/enterprise-admin` instead of this repo.
-2. This repo may keep standalone Playwright E2E for practice.
-3. Read [`docs/PROJECT-PLAN.md`](docs/PROJECT-PLAN.md) for mirror rules.
+1. Work **here**, not in `nx-playground` `apps/enterprise-admin`.
+2. Do not double-write nx leftover + this satellite.
+3. Keep new work on the one-page path: login → approval or audit → SSE/charts.
 
 ## Quick start
 
 ```bash
 pnpm install
-pnpm start   # http://localhost:4200
+pnpm start   # http://localhost:4200/slice after login
 ```
+
+Demo users: `admin/admin`, `manager/manager`, `employee/employee`.
 
 ## Forbidden
 
-- New product features in this repo (use nx-playground)
-- Independent deploy
+- Treating `apps/enterprise-admin` as SSOT
+- Building an event-cms / event-stack clone
+- Independent production deploy claims
 - Committing `docs/platform-inbox/` (gitignored local-only path)
 
 ## Integration
 
-- Sync source: `nx-playground/apps/enterprise-admin`
-- Charts: `nx-playground/libs/charts`
+- Completeness object: this repo
+- Mirror inversion leftover: T-228 (later; do not delete nx apps here)

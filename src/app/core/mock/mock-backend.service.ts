@@ -392,6 +392,17 @@ export class MockBackendService {
   }
 
   /**
+   * Demo login: documented sandbox passwords equal the username.
+   */
+  authenticate(username: string, password: string): User | null {
+    if (!username || username !== password) {
+      return null;
+    }
+    const user = this.users.find((candidate) => candidate.username === username);
+    return user ? { ...user } : null;
+  }
+
+  /**
    * 產生新事件（用於測試即時串流）
    */
   generateRandomEvent(): Event {

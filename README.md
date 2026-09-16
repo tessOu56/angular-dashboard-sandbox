@@ -10,7 +10,7 @@
 
 這是一個模擬大型企業內部管理系統的專業後台應用程式，展示了現代 Angular 開發的最佳實踐和企業級功能實現。
 
-> **與 nx-playground 的關係**：本 repo 是 [`nx-playground`](https://github.com/tessOu56/nx-playground) monorepo 中 `apps/enterprise-admin` 的獨立部署版本（standalone extract），兩者程式碼同源。評估作品時請以 monorepo 為主體，本 repo 用於獨立展示與部署。
+> **與 nx-playground 的關係**：本 repo 是 Angular 企業後台的 **canonical 完整度對象**（T-2026-224）。`nx-playground` `apps/enterprise-admin` 不是這條切片的 SSOT，也不是活動 CMS（`event-cms`）的替代品。產能刻意遠小於 React 活動棧。
 
 ### 核心特色
 
@@ -47,7 +47,8 @@ export PATH="/opt/homebrew/opt/node@20/bin:$PATH"
 # 啟動開發伺服器
 pnpm start
 
-# 應用程式將在 http://localhost:4200/ 運行
+# 完整度切片：http://localhost:4200/slice
+# 未登入會先到 /login，成功後落到同一頁（審批／稽核 + SSE + 圖表）
 ```
 
 ### 建置專案
@@ -347,8 +348,9 @@ pnpm exec webpack-bundle-analyzer dist/angular-dashboard-sandbox/stats.json
 ## 🗺️ 路由結構
 
 ```
-/                       → 重導向到 /dashboard
+/                       → 重導向到 /slice
 /login                  → 登入頁面
+/slice                  → T-2026-224 完整度切片（審批／稽核 + SSE + 圖表）
 /dashboard              → 儀表板
 /approvals              → 審批列表
 /approvals/new          → 新增審批
@@ -372,6 +374,7 @@ pnpm exec webpack-bundle-analyzer dist/angular-dashboard-sandbox/stats.json
 
 ### 已完成 ✅
 
+- [x] T-2026-224 完整度切片：登入 → 審批／稽核 → SSE／圖表同一頁
 - [x] 專案架構重構
 - [x] 共用型別與 SDK
 - [x] RBAC 權限系統

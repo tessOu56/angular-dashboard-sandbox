@@ -1,21 +1,13 @@
-# PROJECT-PLAN — angular-dashboard-sandbox (mirror)
+# angular-dashboard-sandbox
 
-> **Mirror only.** Development SSOT: `nx-playground/apps/enterprise-admin`
+Canonical Angular completeness slice lives **in this repo** (T-2026-224).
 
-## Phase 0
+Planning SSOT is `platform-command` (`planning/projects/angular-dashboard-sandbox.md`). This file is not a roadmap.
 
-- [ ] `pnpm install` + `pnpm start` runs on localhost:4200
-- [ ] Documented sync from nx-playground `apps/enterprise-admin`
+## Slice
 
-## May keep here
+`pnpm start` → login → `/slice` (approvals or audit + mock SSE + SVG charts).
 
-- Standalone Playwright E2E config for practice
+Not an event-cms replacement. Do not implement in `nx-playground` `apps/enterprise-admin`.
 
-## Do not
-
-- Add new dashboard features here
-- Deploy independently
-
----
-
-_Tickets are not tracked in this repo._
+Tickets are not tracked in this repo.
