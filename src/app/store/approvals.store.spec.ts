@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ApprovalsStore } from './approvals.store';
-import { ApprovalRequest, ApprovalStatus } from '../../shared/sdk';
+import { ApprovalRequest, ApprovalStatus, Priority, RequestType } from '../../shared/sdk';
 
 describe('ApprovalsStore', () => {
   let store: ApprovalsStore;
@@ -10,12 +10,12 @@ describe('ApprovalsStore', () => {
       id: '1',
       title: 'Test Approval 1',
       description: 'Description 1',
-      requestType: 'expense',
+      requestType: RequestType.EXPENSE,
       requesterId: 'user1',
       requesterName: 'User One',
       department: 'IT',
       amount: 1000,
-      priority: 'high',
+      priority: Priority.HIGH,
       status: ApprovalStatus.PENDING,
       approvals: [],
       createdAt: new Date().toISOString(),
@@ -25,12 +25,12 @@ describe('ApprovalsStore', () => {
       id: '2',
       title: 'Test Approval 2',
       description: 'Description 2',
-      requestType: 'purchase',
+      requestType: RequestType.PURCHASE,
       requesterId: 'user2',
       requesterName: 'User Two',
       department: 'Sales',
       amount: 5000,
-      priority: 'urgent',
+      priority: Priority.URGENT,
       status: ApprovalStatus.APPROVED,
       approvals: [],
       createdAt: new Date().toISOString(),
@@ -40,12 +40,12 @@ describe('ApprovalsStore', () => {
       id: '3',
       title: 'Test Approval 3',
       description: 'Description 3',
-      requestType: 'travel',
+      requestType: RequestType.TRAVEL,
       requesterId: 'user1',
       requesterName: 'User One',
       department: 'IT',
       amount: 2000,
-      priority: 'medium',
+      priority: Priority.MEDIUM,
       status: ApprovalStatus.REJECTED,
       approvals: [],
       createdAt: new Date().toISOString(),
@@ -90,25 +90,25 @@ describe('ApprovalsStore', () => {
 
     it('should filter pending approvals', () => {
       const pending = store.pendingApprovals();
-      expect(pending).toHaveLength(1);
+      expect(pending).toHaveSize(1);
       expect(pending[0].status).toBe(ApprovalStatus.PENDING);
     });
 
     it('should filter approved approvals', () => {
       const approved = store.approvedApprovals();
-      expect(approved).toHaveLength(1);
+      expect(approved).toHaveSize(1);
       expect(approved[0].status).toBe(ApprovalStatus.APPROVED);
     });
 
     it('should filter rejected approvals', () => {
       const rejected = store.rejectedApprovals();
-      expect(rejected).toHaveLength(1);
+      expect(rejected).toHaveSize(1);
       expect(rejected[0].status).toBe(ApprovalStatus.REJECTED);
     });
 
     it('should filter high priority approvals', () => {
       const highPriority = store.highPriorityApprovals();
-      expect(highPriority).toHaveLength(2); // high + urgent
+      expect(highPriority).toHaveSize(2); // high + urgent
       expect(highPriority.every((a) => ['high', 'urgent', 'critical'].includes(a.priority))).toBe(
         true
       );
@@ -187,7 +187,7 @@ describe('ApprovalsStore', () => {
       (store as any)._approvals.set(mockApprovals);
       store.selectAllApprovals();
 
-      expect(store.selectedApprovals()).toHaveLength(mockApprovals.length);
+      expect(store.selectedApprovals()).toHaveSize(mockApprovals.length);
       expect(store.hasSelectedApprovals()).toBe(true);
     });
 

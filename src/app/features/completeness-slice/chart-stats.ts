@@ -20,7 +20,7 @@ export const SEVERITY_PALETTE: Record<string, { label: string; color: string }> 
   critical: { label: 'Critical', color: '#dc2626' },
 };
 
-export function countBy<T>(items: T[], keyFn: (item: T) => string): Record<string, number> {
+export function countBy<T>(items: readonly T[], keyFn: (item: T) => string): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const item of items) {
     const key = keyFn(item) || 'unknown';
@@ -44,7 +44,7 @@ export function toBarData(
     .sort((a, b) => b.value - a.value || a.key.localeCompare(b.key));
 }
 
-export function severityBars(events: ChartEvent[]): BarDatum[] {
+export function severityBars(events: readonly ChartEvent[]): BarDatum[] {
   const counts = countBy(events, (event) => event.severity);
   const keys = Object.keys(SEVERITY_PALETTE);
   return keys.map((key) => ({
@@ -55,7 +55,7 @@ export function severityBars(events: ChartEvent[]): BarDatum[] {
   }));
 }
 
-export function typeBars(events: ChartEvent[], limit = 6): BarDatum[] {
+export function typeBars(events: readonly ChartEvent[], limit = 6): BarDatum[] {
   return toBarData(countBy(events, (event) => event.type)).slice(0, limit);
 }
 
@@ -64,7 +64,7 @@ export function typeBars(events: ChartEvent[], limit = 6): BarDatum[] {
  * Oldest bucket is index 0.
  */
 export function throughputSeries(
-  timestamps: string[],
+  timestamps: readonly string[],
   now = Date.now(),
   bucketMs = 2000,
   bucketCount = 16
@@ -85,6 +85,6 @@ export function throughputSeries(
   return buckets;
 }
 
-export function maxValue(values: number[]): number {
-  return values.reduce((max, value) => (value > max ? value : value), 0);
+export function maxValue(values: readonly number[]): number {
+  return values.reduce((max, value) => (value > max ? value : max), 0);
 }
