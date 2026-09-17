@@ -5,12 +5,21 @@ import { Permission } from '../shared/sdk';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/dashboard',
+    redirectTo: '/slice',
     pathMatch: 'full',
   },
   {
     path: 'login',
     loadComponent: () => import('./components/login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'slice',
+    loadComponent: () =>
+      import('./features/completeness-slice/completeness-slice.component').then(
+        (m) => m.CompletenessSliceComponent
+      ),
+    canMatch: [RequirePermGuard],
+    data: { requirePerm: [Permission.VIEW_DASHBOARD] },
   },
   {
     path: 'dashboard',
@@ -60,6 +69,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: '/dashboard',
+    redirectTo: '/slice',
   },
 ];

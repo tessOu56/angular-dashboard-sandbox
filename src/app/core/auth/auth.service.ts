@@ -2,7 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import {
   User,
   LoginRequest,
@@ -14,6 +14,7 @@ import {
   UserRole,
 } from '../../../shared/sdk';
 import { PermissionService } from './permission.service';
+import { MockBackendService } from '../mock/mock-backend.service';
 
 @Injectable({
   providedIn: 'root',
@@ -22,6 +23,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private permissionService = inject(PermissionService);
+  private mockBackend = inject(MockBackendService);
 
   // Signals for reactive state management
   private _authState = signal<AuthState>({
@@ -81,6 +83,7 @@ export class AuthService {
           refreshToken,
           permissions: user.permissions || [],
         }));
+        this.permissionService.setPermissions(user.permissions || []);
         this.currentUserSubject.next(user);
       } catch (error) {
         this.clearAuth();
@@ -91,32 +94,14 @@ export class AuthService {
   login(credentials: LoginRequest): Observable<LoginResponse> {
     this._authState.update((state) => ({ ...state, loading: true, error: null }));
 
-    // Mock login for development
-    if (credentials.username === 'admin' && credentials.password === 'admin') {
-      const mockUser: User = {
-        id: '1',
-        username: 'admin',
-        email: 'admin@company.com',
-        firstName: 'Admin',
-        lastName: 'User',
-        role: UserRole.ADMIN,
-        department: 'IT',
-        isActive: true,
-        permissions: Object.values(Permission),
-        timezone: 'UTC',
-        language: 'en',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: 'system',
-        updatedBy: 'system',
-      };
-
+    const mockUser = this.mockBackend.authenticate(credentials.username, credentials.password);
+    if (mockUser) {
       const mockResponse: LoginResponse = {
         user: mockUser,
         token: 'mock-jwt-token',
         refreshToken: 'mock-refresh-token',
         expiresIn: 3600,
-        permissions: Object.values(Permission),
+        permissions: mockUser.permissions,
       };
 
       return of(mockResponse).pipe(
@@ -128,18 +113,8 @@ export class AuthService {
       );
     }
 
-    // Invalid credentials in development mode
     this._authState.update((state) => ({ ...state, loading: false, error: 'Invalid credentials' }));
     return throwError(() => new Error('Invalid username or password'));
-
-    // Real API call would be here in production:
-    // return this.http.post<LoginResponse>('/api/auth/login', credentials).pipe(
-    //   tap((response) => this.setAuthState(response)),
-    //   catchError((error) => {
-    //     this._authState.update((state) => ({ ...state, loading: false, error: error.message }));
-    //     return throwError(() => error);
-    //   })
-    // );
   }
 
   logout(): void {

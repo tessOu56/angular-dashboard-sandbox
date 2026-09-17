@@ -23,7 +23,7 @@ Angular 20 **labelled sandbox** for B2B ops UI patterns: Signals, route/UI RBAC,
 
 模擬企業內部後台的練習切片（**非生產、非金融監管認證**），用來展示 Angular 架構與常見 ops UI 模式。
 
-> **與 nx-playground 的關係**：本 repo 是 [`nx-playground`](https://github.com/tessOu56/nx-playground) monorepo 中 `apps/enterprise-admin` 的獨立 extract，兩者程式碼同源。評估作品時請以 monorepo 為主體；本 repo 沒有獨立托管 demo。
+> **與 nx-playground 的關係**：本 repo 是 Angular 企業後台的 **canonical 完整度對象**（T-2026-224）。`nx-playground` `apps/enterprise-admin` 不是這條切片的 SSOT，也不是活動 CMS（`event-cms`）的替代品。產能刻意遠小於 React 活動棧。本 repo 沒有獨立托管 demo；評估以 `/slice` 為準。
 
 ### 核心特色
 
@@ -60,7 +60,8 @@ export PATH="/opt/homebrew/opt/node@20/bin:$PATH"
 # 啟動開發伺服器
 pnpm start
 
-# 應用程式將在 http://localhost:4200/ 運行
+# 完整度切片：http://localhost:4200/slice
+# 未登入會先到 /login，成功後落到同一頁（審批／稽核 + SSE + 圖表）
 ```
 
 ### 建置專案
@@ -358,8 +359,9 @@ pnpm exec webpack-bundle-analyzer dist/angular-dashboard-sandbox/stats.json
 ## 🗺️ 路由結構
 
 ```
-/                       → 重導向到 /dashboard
+/                       → 重導向到 /slice
 /login                  → 登入頁面
+/slice                  → T-2026-224 完整度切片（審批／稽核 + SSE + 圖表）
 /dashboard              → 儀表板
 /approvals              → 審批列表
 /approvals/new          → 新增審批
@@ -383,6 +385,7 @@ pnpm exec webpack-bundle-analyzer dist/angular-dashboard-sandbox/stats.json
 
 ### 已完成 ✅
 
+- [x] T-2026-224 完整度切片：登入 → 審批／稽核 → SSE／圖表同一頁
 - [x] 專案架構重構
 - [x] 共用型別與 SDK
 - [x] RBAC 權限系統

@@ -16,8 +16,8 @@ test.describe('Approval System', () => {
     await page.fill('input[name="password"]', 'manager');
     await page.click('button[type="submit"]');
 
-    // Wait for dashboard to load
-    await page.waitForURL('/dashboard');
+    // Wait for completeness slice (post-login landing)
+    await page.waitForURL(/\/slice/);
   });
 
   test('should display approvals list', async ({ page }) => {
