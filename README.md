@@ -1,27 +1,40 @@
 # Angular Dashboard Sandbox
 
-> 大型企業內部管理專業後台系統 - 展示企業級 Angular 架構、RBAC 權限控制、Dual-control 審批流程、即時事件監控與完整稽核軌跡
-
 [![Angular](https://img.shields.io/badge/Angular-20.3.0-red.svg)](https://angular.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-blue.svg)](https://www.typescriptlang.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-9.0.0-orange.svg)](https://pnpm.io/)
 
+Angular 20 **labelled sandbox** for B2B ops UI patterns: Signals, route/UI RBAC, dual-control approvals, SSE event feed, audit log. **No hosted demo.** Data is a **mock backend**. This is not a regulated or production admin console.
+
+## What this proves
+
+| Proof | Honest bound |
+|-------|----------------|
+| **Angular 20 + Signals** | Standalone components, Signal Store, typed forms — run locally (`pnpm start` → http://localhost:4200). |
+| **Ops UI patterns** | Login → approvals / audit → SSE. Dual-control is an in-app rule (budget/purchase ≥ $10k), **not** a compliance certification. |
+| **Not claimed** | No public URL. No live API. Backend integration is unfinished. Accessibility helpers exist; **not** a WCAG audit. |
+
+**Relationship:** extract of `apps/enterprise-admin` in [`nx-playground`](https://github.com/tessOu56/nx-playground). Recruiter view: Angular B2B slice, not the event CMS.
+
+**GitHub About:** `Angular 20 B2B ops sandbox — Signals, RBAC, dual-control, SSE. Local mock API only; not hosted, not a regulated system.`  
+**Topics:** `angular` · `typescript` · `rbac` · `signals` · `labelled-demo`
+
 ## 🎯 專案簡介
 
-這是一個模擬大型企業內部管理系統的專業後台應用程式，展示了現代 Angular 開發的最佳實踐和企業級功能實現。
+模擬企業內部後台的練習切片（**非生產、非金融監管認證**），用來展示 Angular 架構與常見 ops UI 模式。
 
-> **與 nx-playground 的關係**：本 repo 是 [`nx-playground`](https://github.com/tessOu56/nx-playground) monorepo 中 `apps/enterprise-admin` 的獨立部署版本（standalone extract），兩者程式碼同源。評估作品時請以 monorepo 為主體，本 repo 用於獨立展示與部署。
+> **與 nx-playground 的關係**：本 repo 是 [`nx-playground`](https://github.com/tessOu56/nx-playground) monorepo 中 `apps/enterprise-admin` 的獨立 extract，兩者程式碼同源。評估作品時請以 monorepo 為主體；本 repo 沒有獨立托管 demo。
 
 ### 核心特色
 
-- **🔐 企業級權限控制 (RBAC)** - 完整的角色權限管理系統，含路由守衛、UI 層級權限控制
-- **✅ Dual-control 審批流程** - 高風險操作雙重審批機制，符合金融監管要求
+- **🔐 RBAC 權限控制** - 路由守衛、UI 層級權限控制（練習用帳密，見下方）
+- **✅ Dual-control 審批流程** - 高風險操作雙重審批（應用內規則，不是監管認證）
 - **📝 動態表單系統** - Schema-driven 表單生成、交叉驗證、自動保存草稿
-- **⚡ 即時事件監控** - SSE 串流 + Ring Buffer 架構，處理大量即時事件
-- **📊 完整稽核軌跡** - 記錄所有操作、支援多維度查詢與匯出
-- **🚀 效能優化** - 虛擬卷動、懶加載路由、智能快取策略
-- **🎨 專業 UI/UX** - 現代化界面設計、動畫效果、完整無障礙支援 (WCAG 2.1)
-- **🔄 Signal Store** - 使用 Angular Signals 實現響應式狀態管理
+- **⚡ 即時事件監控** - SSE 串流 + Ring Buffer（mock 資料）
+- **📊 稽核軌跡** - 記錄操作、查詢與匯出（mock）
+- **🚀 效能優化** - 虛擬卷動、懶加載路由
+- **🎨 UI** - 現代化界面；無障礙是目標，未經正式 WCAG 稽核
+- **🔄 Signal Store** - Angular Signals 狀態管理
 
 ## 📋 環境要求
 
@@ -252,14 +265,12 @@ const cleanup = draftService.autoSave('form-id', form, 30000);
 <input appDebounce [debounceTime]="500" (debounced)="onSearch($event)" />
 ```
 
-## ♿ 無障礙功能
+## ♿ 無障礙（目標，未經正式稽核）
 
-- ✅ WCAG 2.1 Level AA 符合
-- ✅ 鍵盤導航支援（Tab, Enter, Escape）
-- ✅ Screen reader 友善（ARIA 屬性）
-- ✅ 高對比度模式支援
-- ✅ 減少動畫偏好（prefers-reduced-motion）
-- ✅ Skip Link（快速跳轉主內容）
+- 鍵盤導航（Tab, Enter, Escape）
+- ARIA 屬性與 Skip Link
+- 高對比度 / `prefers-reduced-motion` 偏好
+- **Not claimed:** WCAG 2.1 AA certification
 
 ## 🧪 測試
 
@@ -385,7 +396,7 @@ pnpm exec webpack-bundle-analyzer dist/angular-dashboard-sandbox/stats.json
 - [x] E2E 測試框架
 - [x] 效能優化（虛擬卷動、懶加載）
 - [x] UI/UX 增強（動畫、Toast、Modal）
-- [x] 無障礙支援
+- [x] 無障礙輔助（未經 WCAG 稽核）
 
 ### 待開發 ⏳
 
