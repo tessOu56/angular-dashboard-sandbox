@@ -145,7 +145,7 @@ describe('PermissionService', () => {
       service.setPermissions(permissions);
 
       const result = service.getAllPermissions();
-      expect(result).toHaveLength(2);
+      expect(result).toHaveSize(2);
       expect(result).toContain(Permission.VIEW_DASHBOARD);
       expect(result).toContain(Permission.VIEW_APPROVALS);
     });

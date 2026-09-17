@@ -22,8 +22,10 @@ interface LoginForm {
             <label for="username">Username</label>
             <input
               id="username"
+              name="username"
               type="text"
               formControlName="username"
+              autocomplete="username"
               placeholder="Enter username"
               [class.error]="
                 loginForm.get('username')?.invalid && loginForm.get('username')?.touched
@@ -41,8 +43,10 @@ interface LoginForm {
             <label for="password">Password</label>
             <input
               id="password"
+              name="password"
               type="password"
               formControlName="password"
+              autocomplete="current-password"
               placeholder="Enter password"
               [class.error]="
                 loginForm.get('password')?.invalid && loginForm.get('password')?.touched
@@ -67,8 +71,7 @@ interface LoginForm {
 
         <div class="demo-credentials">
           <h4>Demo Credentials:</h4>
-          <p>Username: admin</p>
-          <p>Password: admin</p>
+          <p>admin / admin · manager / manager · employee / employee</p>
         </div>
       </div>
     </div>
@@ -205,7 +208,7 @@ export class LoginComponent {
         next: (response) => {
           this.loading.set(false);
           if (response) {
-            this.router.navigate(['/dashboard']);
+            this.router.navigate(['/slice']);
           } else {
             this.errorMessage.set('Invalid username or password');
           }
