@@ -44,3 +44,7 @@ Thumbs.db
 
 # Platform tickets — never commit distributed inbox
 docs/platform-inbox/
+
+# Local secrets
+.env
+.env.*

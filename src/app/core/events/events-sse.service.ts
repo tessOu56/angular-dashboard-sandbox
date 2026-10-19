@@ -70,16 +70,23 @@ export class EventsSseService implements OnDestroy {
   start(url: string, options: { withCredentials?: boolean } = {}): void {
     this.stop(); // 停止現有連線
 
-    // Sandbox / local: mock SSE so the completeness slice works without a backend.
-    if (url === 'mock' || url.includes('localhost')) {
+    // Sandbox: mock SSE so the completeness slice works without a backend.
+    // Do not use `url.includes('localhost')` — that treats attacker URLs as local.
+    if (url === 'mock' || isLoopbackHttpUrl(url)) {
       this._isConnected.set(true);
       this._error.set(null);
       this.startMockEvents();
       return;
     }
 
+    if (!isSameOriginHttpUrl(url)) {
+      this._isConnected.set(false);
+      this._error.set('SSE URL is not allowed');
+      return;
+    }
+
     try {
-      this.stream = new EventSource(url, { withCredentials: options.withCredentials });
+      this.stream = new EventSource(url, { withCredentials: options.withCredentials === true });
 
       this.stream.onopen = () => {
         this._isConnected.set(true);
@@ -327,4 +334,37 @@ export class EventsSseService implements OnDestroy {
       this.start(url, options);
     }, this.RECONNECT_DELAY);
   }
+}
+
+function parseHttpUrl(url: string): URL | null {
+  try {
+    const parsed = new URL(url, window.location.origin);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function isLoopbackHttpUrl(url: string): boolean {
+  const parsed = parseHttpUrl(url);
+  if (!parsed) {
+    return false;
+  }
+  return (
+    parsed.hostname === 'localhost' ||
+    parsed.hostname === '127.0.0.1' ||
+    parsed.hostname === '::1' ||
+    parsed.hostname === '[::1]'
+  );
+}
+
+function isSameOriginHttpUrl(url: string): boolean {
+  const parsed = parseHttpUrl(url);
+  if (!parsed) {
+    return false;
+  }
+  return parsed.origin === window.location.origin;
 }

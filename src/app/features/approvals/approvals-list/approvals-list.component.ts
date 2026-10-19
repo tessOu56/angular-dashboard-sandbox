@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { TableComponent } from '../../../shared/ui/table/table.component';
@@ -266,6 +266,7 @@ import { Permission, ApprovalStatus } from '../../../../shared/sdk';
 })
 export class ApprovalsListComponent implements OnInit {
   store = inject(ApprovalsStore);
+  private router = inject(Router);
   Permission = Permission;
 
   selectedStatus = '';
@@ -314,8 +315,9 @@ export class ApprovalsListComponent implements OnInit {
     this.store.fetchApprovals();
   }
 
-  onRowClick(row: any): void {
-    // Navigate to detail page
-    window.location.href = `/approvals/${row.id}`;
+  onRowClick(row: { id?: string }): void {
+    if (typeof row?.id === 'string' && row.id.length > 0) {
+      void this.router.navigate(['/approvals', row.id]);
+    }
   }
 }

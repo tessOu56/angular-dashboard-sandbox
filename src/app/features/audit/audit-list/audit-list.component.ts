@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { TableComponent } from '../../../shared/ui/table/table.component';
@@ -289,6 +289,7 @@ import { sdk, Permission, AuditLog, AuditAction, AuditResource } from '../../../
   ],
 })
 export class AuditListComponent implements OnInit {
+  private router = inject(Router);
   Permission = Permission;
 
   auditLogs = signal<AuditLog[]>([]);
@@ -405,7 +406,9 @@ export class AuditListComponent implements OnInit {
     }
   }
 
-  onRowClick(row: any): void {
-    window.location.href = `/audit/${row.id}`;
+  onRowClick(row: { id?: string }): void {
+    if (typeof row?.id === 'string' && row.id.length > 0) {
+      void this.router.navigate(['/audit', row.id]);
+    }
   }
 }

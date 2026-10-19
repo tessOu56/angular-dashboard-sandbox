@@ -261,18 +261,18 @@
 
 ### 認證與授權
 
-- [x] JWT Token 管理
-- [x] Refresh Token 機制
-- [x] 權限快取與失效
-- [x] 路由層級保護
-- [x] UI 層級保護
+- [x] Mock token 管理（`mock-jwt-token`，非真實 JWT 發行）
+- [x] Mock refresh token 欄位（無後端輪替）
+- [x] 權限快取與失效（client-side）
+- [x] 路由層級保護（client-side `canMatch` only）
+- [x] UI 層級保護（`*hasPerm` / `*hasRole`）
 
 ### 資料保護
 
-- [x] XSS 防護（Angular 內建）
-- [x] CSRF 防護（Token 驗證）
+- [x] XSS 防護（Angular 內建 sanitizer）
+- [ ] CSRF 防護（未實作：無 cookie session / Angular XSRF 設定）
 - [x] 輸入驗證
-- [x] 安全的本地儲存
+- [ ] 安全的本地儲存（mock token 仍在 `localStorage`）
 
 ## 🌐 國際化支援（預留）
 
