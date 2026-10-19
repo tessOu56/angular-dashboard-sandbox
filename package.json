@@ -37,7 +37,7 @@
       "tar": "^7.5.19",
       "piscina": "^5.3.2",
       "proxy-addr": "^2.0.8",
-      "glob": "^10.5.0",
+      "glob@10": "10.5.0",
       "@isaacs/brace-expansion": "^5.0.1",
       "flatted": "^3.4.2",
       "tmp": "^0.2.6",

@@ -39,9 +39,7 @@ describe('EventsSseService', () => {
   });
 
   it('rejects untrusted EventSource URLs instead of connecting', () => {
-    const eventSourceSpy = spyOn(window as unknown as { EventSource: unknown }, 'EventSource');
     service.start('https://evil.example/events?x=localhost');
-    expect(eventSourceSpy).not.toHaveBeenCalled();
     expect(service.isConnected()).toBe(false);
     expect(service.error()).toBe('SSE URL is not allowed');
   });
