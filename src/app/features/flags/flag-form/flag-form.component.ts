@@ -1,15 +1,12 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { StubPageComponent } from '../../../shared/ui/stub-page/stub-page.component';
 
 @Component({
   selector: 'app-flag-form',
   standalone: true,
-  imports: [CommonModule],
+  imports: [StubPageComponent],
   template: `
-    <div class="flag-form">
-      <h2>Flag Form</h2>
-      <p>Component under development</p>
-    </div>
+    <app-stub-page title="New flag" parentLink="/flags" parentLabel="Back to flags" />
   `,
 })
 export class FlagFormComponent {}

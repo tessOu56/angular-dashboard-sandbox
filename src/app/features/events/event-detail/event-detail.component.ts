@@ -1,15 +1,12 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { StubPageComponent } from '../../../shared/ui/stub-page/stub-page.component';
 
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [StubPageComponent],
   template: `
-    <div class="event-detail">
-      <h2>Event Detail</h2>
-      <p>Component under development</p>
-    </div>
+    <app-stub-page title="Event detail" parentLink="/events" parentLabel="Back to events" />
   `,
 })
 export class EventDetailComponent {}

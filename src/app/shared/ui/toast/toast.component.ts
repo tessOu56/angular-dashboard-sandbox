@@ -35,7 +35,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
           *ngIf="toast.dismissible"
           class="toast-dismiss"
           (click)="toastService.dismiss(toast.id)"
-          aria-label="關閉"
+          aria-label="Dismiss"
         >
           ✕
         </button>

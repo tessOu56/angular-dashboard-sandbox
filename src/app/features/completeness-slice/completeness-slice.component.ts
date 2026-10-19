@@ -3,7 +3,6 @@ import { Component, OnDestroy, OnInit, computed, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { TableComponent } from '../../shared/ui/table/table.component';
 import { HasPermDirective } from '../../shared/directives';
-import { AuthService } from '../../core/auth/auth.service';
 import { EventsSseService } from '../../core/events/events-sse.service';
 import { MockBackendService } from '../../core/mock/mock-backend.service';
 import { ApprovalsStore } from '../../store/approvals.store';
@@ -22,19 +21,10 @@ export class CompletenessSliceComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private mockBackend = inject(MockBackendService);
 
-  auth = inject(AuthService);
   eventsSse = inject(EventsSseService);
   approvalsStore = inject(ApprovalsStore);
 
   Permission = Permission;
-
-  readonly userLabel = computed(() => {
-    const user = this.auth.user();
-    if (!user) {
-      return 'signed out';
-    }
-    return `${user.username} · ${user.role}`;
-  });
 
   readonly openApprovals = computed(() =>
     this.approvalsStore
@@ -99,10 +89,6 @@ export class CompletenessSliceComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.eventsSse.stop();
-  }
-
-  logout(): void {
-    this.auth.logout();
   }
 
   openApproval(row: { id?: string }): void {

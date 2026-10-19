@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TableColumn, PaginationParams, PaginatedResponse } from '../../../../shared/sdk';
+import { TableColumn, PaginatedResponse } from '../../../../shared/sdk';
 
 @Component({
   selector: 'app-table',
@@ -8,19 +8,16 @@ import { TableColumn, PaginationParams, PaginatedResponse } from '../../../../sh
   imports: [CommonModule],
   template: `
     <div class="table-container">
-      <!-- Table Header -->
       <div class="table-header" *ngIf="showHeader()">
         <div class="table-title">
           <h3>{{ _title() }}</h3>
           <span class="table-subtitle" *ngIf="_subtitle()">{{ _subtitle() }}</span>
         </div>
-        <div class="table-actions">
-          <ng-content select="[slot=actions]"></ng-content>
-        </div>
       </div>
 
-      <!-- Table Content -->
-      <div class="table-wrapper">
+      <div class="loading-state" *ngIf="_loading()" role="status">Loading…</div>
+
+      <div class="table-wrapper" *ngIf="!_loading() && _data().length > 0">
         <table class="table">
           <thead>
             <tr>
@@ -30,22 +27,27 @@ import { TableColumn, PaginationParams, PaginatedResponse } from '../../../../sh
                   [checked]="allSelected()"
                   [indeterminate]="someSelected()"
                   (change)="toggleSelectAll()"
+                  aria-label="Select all rows"
                 />
               </th>
-              <th
-                *ngFor="let column of _columns()"
-                [class]="getColumnClasses(column)"
-                (click)="onSort(column)"
-              >
-                <div class="column-header">
+              <th *ngFor="let column of _columns()" [class]="getColumnClasses(column)">
+                <button
+                  *ngIf="column.sortable; else staticHeader"
+                  type="button"
+                  class="sort-btn"
+                  (click)="onSort(column)"
+                >
                   <span>{{ column.header }}</span>
-                  <div class="sort-indicators" *ngIf="column.sortable">
-                    <span class="sort-asc" [class.active]="isSortActive(column, 'asc')">↑</span>
-                    <span class="sort-desc" [class.active]="isSortActive(column, 'desc')">↓</span>
-                  </div>
-                </div>
+                  <span class="sort-indicators" aria-hidden="true">
+                    <span [class.active]="isSortActive(column, 'asc')">↑</span>
+                    <span [class.active]="isSortActive(column, 'desc')">↓</span>
+                  </span>
+                </button>
+                <ng-template #staticHeader>
+                  <span>{{ column.header }}</span>
+                </ng-template>
               </th>
-              <th *ngIf="hasActions()" class="actions-column">Actions</th>
+              <th *ngIf="_showActions()" class="actions-column">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -53,7 +55,10 @@ import { TableColumn, PaginationParams, PaginatedResponse } from '../../../../sh
               *ngFor="let item of _data(); trackBy: trackByFn"
               [class.selected]="isSelected(item)"
               [class.clickable]="_clickable()"
+              [attr.tabindex]="_clickable() ? 0 : null"
               (click)="onRowClick(item)"
+              (keydown.enter)="onRowActivate($event, item)"
+              (keydown.space)="onRowActivate($event, item)"
             >
               <td *ngIf="_selectable()" class="select-column">
                 <input
@@ -61,47 +66,63 @@ import { TableColumn, PaginationParams, PaginatedResponse } from '../../../../sh
                   [checked]="isSelected(item)"
                   (change)="toggleSelect(item)"
                   (click)="$event.stopPropagation()"
+                  [attr.aria-label]="'Select ' + rowLabel(item)"
                 />
               </td>
               <td *ngFor="let column of _columns()" [class]="getColumnClasses(column)">
                 <ng-container [ngSwitch]="column.key">
                   <span
                     *ngSwitchCase="'status'"
-                    [class]="getStatusClass(getItemValue(item, column.key))"
+                    class="badge"
+                    [ngClass]="getStatusClass(getItemValue(item, column.key))"
                   >
-                    {{ getItemValue(item, column.key) }}
+                    {{ formatToken(getItemValue(item, column.key)) }}
                   </span>
                   <span
                     *ngSwitchCase="'priority'"
-                    [class]="getPriorityClass(getItemValue(item, column.key))"
+                    class="badge"
+                    [ngClass]="getPriorityClass(getItemValue(item, column.key))"
                   >
-                    {{ getItemValue(item, column.key) }}
+                    {{ formatToken(getItemValue(item, column.key)) }}
+                  </span>
+                  <span
+                    *ngSwitchCase="'severity'"
+                    class="badge"
+                    [ngClass]="getPriorityClass(getItemValue(item, column.key))"
+                  >
+                    {{ formatToken(getItemValue(item, column.key)) }}
                   </span>
                   <span *ngSwitchCase="'createdAt'">
-                    {{ getItemValue(item, column.key) | date : 'short' }}
+                    {{ getItemValue(item, column.key) | date : 'MMM d, y, h:mm a' }}
                   </span>
                   <span *ngSwitchCase="'updatedAt'">
-                    {{ getItemValue(item, column.key) | date : 'short' }}
+                    {{ getItemValue(item, column.key) | date : 'MMM d, y, h:mm a' }}
                   </span>
-                  <span *ngSwitchDefault>{{ getItemValue(item, column.key) }}</span>
+                  <span *ngSwitchCase="'timestamp'">
+                    {{ getItemValue(item, column.key) | date : 'MMM d, y, h:mm a' }}
+                  </span>
+                  <span *ngSwitchCase="'amount'">
+                    {{ formatAmount(getItemValue(item, column.key)) }}
+                  </span>
+                  <span *ngSwitchCase="'isEnabled'">
+                    {{ getItemValue(item, column.key) ? 'Yes' : 'No' }}
+                  </span>
+                  <span *ngSwitchDefault>{{ formatToken(getItemValue(item, column.key)) }}</span>
                 </ng-container>
               </td>
-              <td *ngIf="hasActions()" class="actions-column">
-                <ng-content select="[slot=row-actions]" [item]="item"></ng-content>
+              <td *ngIf="_showActions()" class="actions-column">
+                <ng-content select="[slot=row-actions]"></ng-content>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Empty State -->
-      <div class="empty-state" *ngIf="_data().length === 0">
-        <div class="empty-icon">📋</div>
-        <h4>No data available</h4>
+      <div class="empty-state" *ngIf="!_loading() && _data().length === 0">
+        <h3>Nothing to show</h3>
         <p>{{ _emptyMessage() }}</p>
       </div>
 
-      <!-- Pagination -->
       <div class="table-pagination" *ngIf="_pagination()">
         <div class="pagination-info">
           <span>
@@ -110,25 +131,14 @@ import { TableColumn, PaginationParams, PaginatedResponse } from '../../../../sh
         </div>
         <div class="pagination-controls">
           <button
-            class="btn btn-outline btn-sm"
+            class="btn btn-sm"
             [disabled]="currentPage() <= 1"
             (click)="goToPage(currentPage() - 1)"
           >
             Previous
           </button>
-          <div class="page-numbers">
-            <button
-              *ngFor="let page of getPageNumbers()"
-              class="btn btn-sm"
-              [class.btn-primary]="page === currentPage()"
-              [class.btn-outline]="page !== currentPage()"
-              (click)="goToPage(page)"
-            >
-              {{ page }}
-            </button>
-          </div>
           <button
-            class="btn btn-outline btn-sm"
+            class="btn btn-sm"
             [disabled]="currentPage() >= totalPages()"
             (click)="goToPage(currentPage() + 1)"
           >
@@ -141,35 +151,25 @@ import { TableColumn, PaginationParams, PaginatedResponse } from '../../../../sh
   styles: [
     `
       .table-container {
-        background: white;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
+        background: var(--color-surface);
       }
 
       .table-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid #e5e7eb;
+        padding: var(--space-4);
+        border-bottom: 1px solid var(--color-border);
       }
 
       .table-title h3 {
         margin: 0;
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: #111827;
+        font-size: var(--text-md);
       }
 
       .table-subtitle {
-        font-size: 0.875rem;
-        color: #6b7280;
-      }
-
-      .table-actions {
-        display: flex;
-        gap: 0.5rem;
+        font-size: var(--text-sm);
+        color: var(--color-ink-muted);
       }
 
       .table-wrapper {
@@ -179,187 +179,92 @@ import { TableColumn, PaginationParams, PaginatedResponse } from '../../../../sh
       .table {
         width: 100%;
         border-collapse: collapse;
+        font-size: var(--text-sm);
       }
 
       .table th,
       .table td {
-        padding: 0.75rem 1rem;
+        padding: 0.7rem 0.85rem;
         text-align: left;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid var(--color-border);
+        vertical-align: middle;
       }
 
       .table th {
-        background: #f9fafb;
+        background: var(--color-bg);
+        color: var(--color-ink-muted);
         font-weight: 600;
-        color: #374151;
-        cursor: pointer;
-        user-select: none;
-      }
-
-      .table th:hover {
-        background: #f3f4f6;
-      }
-
-      .table tbody tr:hover {
-        background: #f9fafb;
+        white-space: nowrap;
       }
 
       .table tbody tr.selected {
-        background: #eff6ff;
+        background: var(--color-accent-soft);
       }
 
       .table tbody tr.clickable {
         cursor: pointer;
       }
 
-      .column-header {
-        display: flex;
+      .table tbody tr.clickable:hover,
+      .table tbody tr.clickable:focus-visible {
+        background: var(--color-bg);
+      }
+
+      .sort-btn {
+        display: inline-flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
+        gap: var(--space-2);
+        padding: 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
       }
 
       .sort-indicators {
-        display: flex;
+        display: inline-flex;
         flex-direction: column;
-        font-size: 0.75rem;
-        color: #9ca3af;
+        font-size: 0.65rem;
+        color: var(--color-border-strong);
+        line-height: 1;
       }
 
       .sort-indicators .active {
-        color: #3b82f6;
+        color: var(--color-accent);
       }
 
       .select-column {
-        width: 3rem;
-        text-align: center;
+        width: 2.5rem;
       }
 
       .actions-column {
-        width: 8rem;
-        text-align: center;
-      }
-
-      .empty-state {
-        text-align: center;
-        padding: 3rem 1.5rem;
-        color: #6b7280;
-      }
-
-      .empty-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-      }
-
-      .empty-state h4 {
-        margin: 0 0 0.5rem 0;
-        color: #374151;
-      }
-
-      .empty-state p {
-        margin: 0;
+        width: 6rem;
       }
 
       .table-pagination {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem 1.5rem;
-        border-top: 1px solid #e5e7eb;
+        gap: var(--space-3);
+        padding: var(--space-3) var(--space-4);
+        border-top: 1px solid var(--color-border);
       }
 
       .pagination-info {
-        color: #6b7280;
-        font-size: 0.875rem;
+        color: var(--color-ink-muted);
+        font-size: var(--text-sm);
       }
 
       .pagination-controls {
         display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .page-numbers {
-        display: flex;
-        gap: 0.25rem;
-      }
-
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.25rem 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        background: white;
-        color: #374151;
-        font-size: 0.875rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-
-      .btn:hover:not(:disabled) {
-        background: #f9fafb;
-      }
-
-      .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .btn-primary {
-        background: #3b82f6;
-        color: white;
-        border-color: #3b82f6;
-      }
-
-      .btn-primary:hover:not(:disabled) {
-        background: #2563eb;
-      }
-
-      .btn-outline {
-        background: transparent;
-        border-color: #d1d5db;
-      }
-
-      .btn-sm {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.75rem;
-      }
-
-      /* Status and Priority Classes */
-      .status-pending {
-        color: #f59e0b;
-      }
-      .status-approved {
-        color: #10b981;
-      }
-      .status-rejected {
-        color: #ef4444;
-      }
-      .status-draft {
-        color: #6b7280;
-      }
-
-      .priority-low {
-        color: #10b981;
-      }
-      .priority-medium {
-        color: #f59e0b;
-      }
-      .priority-high {
-        color: #ef4444;
-      }
-      .priority-urgent {
-        color: #dc2626;
-        font-weight: 600;
+        gap: var(--space-2);
       }
     `,
   ],
 })
 export class TableComponent<T = any> {
-  // Internal signals (protected for template access)
   protected _data = signal<T[]>([]);
   protected _columns = signal<TableColumn[]>([]);
   protected _title = signal('');
@@ -367,11 +272,11 @@ export class TableComponent<T = any> {
   protected _selectable = signal(false);
   protected _clickable = signal(false);
   protected _loading = signal(false);
-  protected _emptyMessage = signal('No data to display');
+  protected _showActions = signal(false);
+  protected _emptyMessage = signal('No rows match the current filters.');
   protected _pagination = signal<PaginatedResponse<T> | null>(null);
   protected _selectedItems = signal<string[]>([]);
 
-  // Input setters
   @Input() set data(value: T[]) {
     this._data.set(value);
   }
@@ -393,6 +298,9 @@ export class TableComponent<T = any> {
   @Input() set loading(value: boolean) {
     this._loading.set(value);
   }
+  @Input() set showActions(value: boolean) {
+    this._showActions.set(value);
+  }
   @Input() set emptyMessage(value: string) {
     this._emptyMessage.set(value);
   }
@@ -406,10 +314,6 @@ export class TableComponent<T = any> {
   @Input() trackByFn = (index: number, item: T) => (item as any).id || index;
 
   @Output() rowClick = new EventEmitter<T>();
-
-  getItemValue(item: T, key: any): any {
-    return (item as any)[key];
-  }
   @Output() selectionChange = new EventEmitter<string[]>();
   @Output() sortChange = new EventEmitter<{ column: string; direction: 'asc' | 'desc' }>();
   @Output() pageChange = new EventEmitter<number>();
@@ -420,7 +324,6 @@ export class TableComponent<T = any> {
   currentSort = signal<{ column: string; direction: 'asc' | 'desc' } | null>(null);
 
   showHeader = computed(() => this._title() || this._subtitle());
-  hasActions = computed(() => true); // This would be determined by content projection
 
   allSelected = computed(() => {
     const data = this._data();
@@ -432,9 +335,37 @@ export class TableComponent<T = any> {
     return data.some((item: T) => this.isSelected(item)) && !this.allSelected();
   });
 
-  totalPages = computed(() => {
-    return Math.ceil(this.totalItems() / this.pageSize());
-  });
+  totalPages = computed(() => Math.ceil(this.totalItems() / this.pageSize()) || 1);
+
+  getItemValue(item: T, key: any): any {
+    return (item as any)[key];
+  }
+
+  formatToken(value: unknown): string {
+    if (value === null || value === undefined || value === '') {
+      return '—';
+    }
+    if (typeof value === 'boolean') {
+      return value ? 'Yes' : 'No';
+    }
+    if (typeof value === 'string') {
+      return value.replace(/_/g, ' ');
+    }
+    return String(value);
+  }
+
+  formatAmount(value: unknown): string {
+    const amount = typeof value === 'number' ? value : Number(value);
+    if (Number.isNaN(amount)) {
+      return this.formatToken(value);
+    }
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  }
+
+  rowLabel(item: T): string {
+    const record = item as any;
+    return record.title || record.name || record.id || 'row';
+  }
 
   getStartIndex(): number {
     return (this.currentPage() - 1) * this.pageSize() + 1;
@@ -442,42 +373,6 @@ export class TableComponent<T = any> {
 
   getEndIndex(): number {
     return Math.min(this.currentPage() * this.pageSize(), this.totalItems());
-  }
-
-  getPageNumbers(): number[] {
-    const total = this.totalPages();
-    const current = this.currentPage();
-    const pages: number[] = [];
-
-    if (total <= 7) {
-      for (let i = 1; i <= total; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (current <= 4) {
-        for (let i = 1; i <= 5; i++) {
-          pages.push(i);
-        }
-        pages.push(-1); // Ellipsis
-        pages.push(total);
-      } else if (current >= total - 3) {
-        pages.push(1);
-        pages.push(-1); // Ellipsis
-        for (let i = total - 4; i <= total; i++) {
-          pages.push(i);
-        }
-      } else {
-        pages.push(1);
-        pages.push(-1); // Ellipsis
-        for (let i = current - 1; i <= current + 1; i++) {
-          pages.push(i);
-        }
-        pages.push(-1); // Ellipsis
-        pages.push(total);
-      }
-    }
-
-    return pages;
   }
 
   getColumnClasses(column: TableColumn): string {
@@ -513,8 +408,13 @@ export class TableComponent<T = any> {
     }
   }
 
+  onRowActivate(event: Event, item: T): void {
+    event.preventDefault();
+    this.onRowClick(item);
+  }
+
   getStatusClass(status: any): string {
-    if (typeof status !== 'string') return '';
+    if (typeof status !== 'string') return 'status-default';
     const statusLower = status.toLowerCase();
 
     if (
@@ -542,7 +442,7 @@ export class TableComponent<T = any> {
   }
 
   getPriorityClass(priority: any): string {
-    if (typeof priority !== 'string') return '';
+    if (typeof priority !== 'string') return 'status-default';
     const priorityLower = priority.toLowerCase();
 
     if (priorityLower.includes('critical') || priorityLower.includes('urgent')) {
@@ -557,7 +457,7 @@ export class TableComponent<T = any> {
     if (priorityLower.includes('low')) {
       return 'priority-low';
     }
-    return 'priority-default';
+    return 'status-default';
   }
 
   isSelected(item: T): boolean {
@@ -570,7 +470,7 @@ export class TableComponent<T = any> {
     const selected = this._selectedItems();
 
     if (selected.includes(id)) {
-      this._selectedItems.set(selected.filter((item: string) => item !== id));
+      this._selectedItems.set(selected.filter((itemId: string) => itemId !== id));
     } else {
       this._selectedItems.set([...selected, id]);
     }
@@ -580,13 +480,11 @@ export class TableComponent<T = any> {
 
   toggleSelectAll(): void {
     const data = this._data();
-    const selected = this._selectedItems();
 
     if (this.allSelected()) {
       this._selectedItems.set([]);
     } else {
-      const allIds = data.map((item: any) => (item as any).id);
-      this._selectedItems.set(allIds);
+      this._selectedItems.set(data.map((item: any) => item.id));
     }
 
     this.selectionChange.emit(this._selectedItems());

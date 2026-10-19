@@ -32,7 +32,7 @@ export function countBy<T>(items: readonly T[], keyFn: (item: T) => string): Rec
 export function toBarData(
   counts: Record<string, number>,
   palette?: Record<string, { label: string; color: string }>,
-  fallbackColor = '#6366f1'
+  fallbackColor = '#1f4a42'
 ): BarDatum[] {
   return Object.entries(counts)
     .map(([key, value]) => ({

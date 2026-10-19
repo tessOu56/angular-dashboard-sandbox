@@ -44,7 +44,7 @@ import { ButtonComponent } from '../button/button.component';
         <!-- Header -->
         <div class="modal-header" *ngIf="showHeader">
           <h2 id="modal-title" class="modal-title">{{ title }}</h2>
-          <button *ngIf="dismissible" class="modal-close" (click)="close()" aria-label="關閉對話框">
+          <button *ngIf="dismissible" class="modal-close" (click)="close()" aria-label="Close dialog">
             ✕
           </button>
         </div>
@@ -58,8 +58,8 @@ import { ButtonComponent } from '../button/button.component';
         <div class="modal-footer" *ngIf="showFooter">
           <ng-content select="[modal-footer]"></ng-content>
           <div *ngIf="!hasFooterContent" class="default-footer">
-            <app-button variant="outline" (onClick)="close()">取消</app-button>
-            <app-button variant="primary" (onClick)="confirm()">確認</app-button>
+            <app-button variant="outline" (onClick)="close()">Cancel</app-button>
+            <app-button variant="primary" (onClick)="confirm()">Confirm</app-button>
           </div>
         </div>
       </div>

@@ -16,6 +16,15 @@ Angular 20 **labelled sandbox** for B2B ops UI patterns: Signals, route/UI RBAC,
 
 **Relationship:** extract of `apps/enterprise-admin` in [`nx-playground`](https://github.com/tessOu56/nx-playground). Recruiter view: Angular B2B slice, not the event CMS.
 
+## What you will see
+
+Local only: `pnpm start` → http://localhost:4200. Unauthenticated visits go to `/login`. After `admin` / `admin` the app lands on `/slice` (approvals, audit, mock SSE, charts). Other list routes share the same chrome. Form and detail routes are labelled stubs, not dead ends.
+
+| Screen | Desktop | Mobile |
+|--------|---------|--------|
+| Sign in | ![Sign in](docs/screenshots/login-desktop.png) | ![Sign in, mobile](docs/screenshots/login-mobile.png) |
+| Overview (`/slice`) | ![Overview](docs/screenshots/slice-desktop.png) | ![Overview, mobile](docs/screenshots/slice-mobile.png) |
+
 **GitHub About:** `Angular 20 B2B ops sandbox — Signals, RBAC, dual-control, SSE. Local mock API only; not hosted, not a regulated system.`  
 **Topics:** `angular` · `typescript` · `rbac` · `signals` · `labelled-demo`
 

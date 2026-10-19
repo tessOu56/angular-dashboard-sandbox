@@ -66,7 +66,7 @@ import { BarDatum, maxValue } from './chart-stats';
           role="img"
           aria-label="Event throughput sparkline"
         >
-          <polyline [attr.points]="sparklinePoints()" fill="none" stroke="#2563eb" stroke-width="2" />
+          <polyline [attr.points]="sparklinePoints()" fill="none" stroke="#1f4a42" stroke-width="2" />
         </svg>
       </section>
     </div>
