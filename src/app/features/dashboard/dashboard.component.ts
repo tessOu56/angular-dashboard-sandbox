@@ -160,7 +160,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     ]);
 
     if (this.permissionService.hasPermission(Permission.VIEW_EVENTS)) {
-      this.eventsSse.start('http://localhost:3000/api/events/stream');
+      this.eventsSse.start('mock');
     }
   }
 
@@ -168,7 +168,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.eventsSse.isConnected()) {
       this.eventsSse.stop();
     } else {
-      this.eventsSse.start('http://localhost:3000/api/events/stream');
+      this.eventsSse.start('mock');
     }
   }
 }

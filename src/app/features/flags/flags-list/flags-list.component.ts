@@ -141,7 +141,7 @@ export class FlagsListComponent implements OnInit {
   }
 
   onRowClick(row: { id?: string }): void {
-    if (row?.id) {
+    if (typeof row?.id === 'string' && row.id.length > 0) {
       void this.router.navigate(['/flags', row.id]);
     }
   }

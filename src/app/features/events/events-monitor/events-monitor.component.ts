@@ -176,9 +176,7 @@ export class EventsMonitorComponent implements OnInit, OnDestroy {
   }
 
   startStream(): void {
-    this.eventsSse.start('http://localhost:3000/api/events/stream', {
-      withCredentials: true,
-    });
+    this.eventsSse.start('mock');
   }
 
   toggleStream(): void {
@@ -218,7 +216,7 @@ export class EventsMonitorComponent implements OnInit, OnDestroy {
   }
 
   onRowClick(row: { id?: string }): void {
-    if (row?.id) {
+    if (typeof row?.id === 'string' && row.id.length > 0) {
       void this.router.navigate(['/events', row.id]);
     }
   }

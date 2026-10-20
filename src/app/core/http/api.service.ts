@@ -120,13 +120,19 @@ export class ApiService {
       );
   }
 
-  // SSE (Server-Sent Events)
+  // SSE (Server-Sent Events). Endpoint must be a same-origin path.
   createEventSource(endpoint: string): EventSource {
+    if (!endpoint.startsWith('/') || endpoint.startsWith('//')) {
+      throw new Error('SSE endpoint must be a same-origin path');
+    }
     return new EventSource(`${this.baseUrl}${endpoint}`);
   }
 
-  // WebSocket connection
+  // WebSocket connection. Endpoint must be a same-origin path.
   createWebSocket(endpoint: string): WebSocket {
+    if (!endpoint.startsWith('/') || endpoint.startsWith('//')) {
+      throw new Error('WebSocket endpoint must be a same-origin path');
+    }
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}${this.baseUrl}${endpoint}`;
     return new WebSocket(wsUrl);

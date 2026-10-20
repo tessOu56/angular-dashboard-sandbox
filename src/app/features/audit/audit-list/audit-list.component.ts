@@ -221,7 +221,7 @@ export class AuditListComponent implements OnInit {
   }
 
   onRowClick(row: { id?: string }): void {
-    if (row?.id) {
+    if (typeof row?.id === 'string' && row.id.length > 0) {
       void this.router.navigate(['/audit', row.id]);
     }
   }

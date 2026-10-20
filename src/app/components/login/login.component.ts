@@ -79,7 +79,7 @@ interface DemoAccount {
         </form>
 
         <section class="demo-accounts" aria-labelledby="demo-heading">
-          <h2 id="demo-heading">Demo accounts</h2>
+          <h2 id="demo-heading">Demo accounts (in-browser only)</h2>
           <ul>
             <li *ngFor="let account of demoAccounts">
               <button type="button" (click)="fillDemo(account)">

@@ -391,6 +391,11 @@ export class MockBackendService {
     return [...this.users];
   }
 
+  getUserByUsername(username: string): User | null {
+    const user = this.users.find((candidate) => candidate.username === username);
+    return user ? { ...user } : null;
+  }
+
   /**
    * Demo login: documented sandbox passwords equal the username.
    */
@@ -398,8 +403,7 @@ export class MockBackendService {
     if (!username || username !== password) {
       return null;
     }
-    const user = this.users.find((candidate) => candidate.username === username);
-    return user ? { ...user } : null;
+    return this.getUserByUsername(username);
   }
 
   /**

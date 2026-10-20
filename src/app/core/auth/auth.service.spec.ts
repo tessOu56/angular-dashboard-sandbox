@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
-import { AuthService } from './auth.service';
+import { AuthService, MOCK_ACCESS_TOKEN } from './auth.service';
+import { Permission, UserRole } from '../../../shared/sdk';
 
 describe('AuthService sandbox login', () => {
   let service: AuthService;
@@ -37,5 +38,42 @@ describe('AuthService sandbox login', () => {
         done();
       },
     });
+  });
+
+  it('rehydrates role and permissions from the mock catalog, not localStorage', () => {
+    localStorage.setItem('auth_token', MOCK_ACCESS_TOKEN);
+    localStorage.setItem(
+      'user',
+      JSON.stringify({
+        username: 'employee',
+        role: 'admin',
+        permissions: ['*'],
+      })
+    );
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideRouter([]), AuthService],
+    });
+    const rehydrated = TestBed.inject(AuthService);
+
+    expect(rehydrated.isAuthenticated()).toBe(true);
+    expect(rehydrated.user()?.role).toBe(UserRole.OPERATOR);
+    expect(rehydrated.isAdmin()).toBe(false);
+    expect(rehydrated.hasPermission(Permission.MANAGE_FLAGS)).toBe(false);
+  });
+
+  it('clears a session when the stored token is not the mock token', () => {
+    localStorage.setItem('auth_token', 'forged-token');
+    localStorage.setItem('user', JSON.stringify({ username: 'admin', permissions: ['*'] }));
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideRouter([]), AuthService],
+    });
+    const rehydrated = TestBed.inject(AuthService);
+
+    expect(rehydrated.isAuthenticated()).toBe(false);
+    expect(localStorage.getItem('auth_token')).toBeNull();
   });
 });
