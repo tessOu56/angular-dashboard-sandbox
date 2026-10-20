@@ -1,8 +1,10 @@
 # Angular Dashboard Sandbox
 
+[![CI](https://github.com/tessOu56/angular-dashboard-sandbox/actions/workflows/ci.yml/badge.svg)](https://github.com/tessOu56/angular-dashboard-sandbox/actions/workflows/ci.yml)
 [![Angular](https://img.shields.io/badge/Angular-20.3.0-red.svg)](https://angular.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-blue.svg)](https://www.typescriptlang.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-9.0.0-orange.svg)](https://pnpm.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 Angular 20 **labelled sandbox** for B2B ops UI patterns: Signals, route/UI RBAC, dual-control approvals, SSE event feed, audit log. **No hosted demo.** Data is a **mock backend**. This is not a regulated or production admin console.
 
@@ -81,12 +83,17 @@ pnpm build
 # 執行所有測試
 pnpm test
 
+# CI / headless（ChromeHeadlessCI）
+pnpm test:ci
+
 # Watch 模式
 pnpm test:watch
 
 # 產生覆蓋率報告
 pnpm test:coverage
 ```
+
+Push and pull requests run `pnpm install` → `pnpm test:ci` → `pnpm build`. `pnpm lint` is not wired (`ng lint` has no architect target). Playwright `e2e` stays local: several specs still target stub form/detail routes.
 
 ### E2E 測試
 
@@ -292,7 +299,9 @@ const cleanup = draftService.autoSave('form-id', form, 30000);
 
 ## 📖 API 文檔
 
-### SDK 使用方式
+In-process **mock SDK only**. There is no hosted or public API. `sdk.*` calls never leave this sandbox.
+
+### SDK 使用方式（mock）
 
 ```typescript
 import { sdk } from '../shared/sdk';
@@ -358,30 +367,35 @@ pnpm exec webpack-bundle-analyzer dist/angular-dashboard-sandbox/stats.json
 - 所有公開 API 需要測試
 - 使用 Mock 資料
 
+<a id="route-status"></a>
+
 ## 🗺️ 路由結構
 
-```
-/                       → 重導向到 /slice
-/login                  → 登入頁面
-/slice                  → T-2026-224 完整度切片（審批／稽核 + SSE + 圖表）
-/dashboard              → 儀表板
-/approvals              → 審批列表
-/approvals/new          → 新增審批
-/approvals/:id          → 審批詳情
-/flags                  → 旗標列表
-/flags/new              → 新增旗標
-/flags/:id              → 旗標詳情
-/flags/:id/compare      → 旗標比較
-/events                 → 事件監控
-/events/:id             → 事件詳情
-/settings               → 平台設定
-/settings/dictionary    → 字典管理
-/settings/webhooks      → Webhook 管理
-/settings/permissions   → 權限管理
-/audit                  → 稽核列表
-/audit/:id              → 稽核詳情
-/unauthorized           → 未授權頁面
-```
+`/` and unknown paths redirect to `/slice`. **`/slice` is the honesty checkpoint**: login → approvals / audit → mock SSE + charts. Other routes are extra surface, not a live integration.
+
+| Route | What | Status | Data |
+| ----- | ---- | ------ | ---- |
+| `/login` | Demo login | mock-complete | Local users (`admin` / `manager` / `employee`) |
+| `/slice` | Completeness slice | mock-complete | Mock stores + mock SSE (`eventsSse.start('mock')`) |
+| `/dashboard` | Stats + lists | mock-complete | Same mock stores; localhost SSE URL still uses the mock stream |
+| `/approvals` | Approval list | mock-complete | Mock SDK / store |
+| `/approvals/new` | Create form | stub | Placeholder (“under development”) |
+| `/approvals/:id` | Approval detail | stub | Placeholder |
+| `/flags` | Flag list | mock-complete | Mock store |
+| `/flags/new` | Create form | stub | Placeholder |
+| `/flags/:id` | Flag detail | stub | Placeholder |
+| `/flags/:id/compare` | Compare | stub | Placeholder |
+| `/events` | Event monitor | mock-complete | Mock SSE on localhost |
+| `/events/:id` | Event detail | stub | Placeholder |
+| `/settings` | Settings home | stub | Placeholder |
+| `/settings/dictionary` | Dictionary | stub | Placeholder |
+| `/settings/webhooks` | Webhooks | stub | Placeholder |
+| `/settings/permissions` | Permissions | stub | Placeholder |
+| `/audit` | Audit list | mock-complete | Mock SDK |
+| `/audit/:id` | Audit detail | stub | Placeholder |
+| `/unauthorized` | RBAC deny page | mock-complete | Static page |
+
+**Status key:** `mock-complete` = usable UI on local mock data. `stub` = routed placeholder, not a working feature. No public live API.
 
 ## 📊 專案狀態
 
@@ -427,7 +441,7 @@ pnpm exec webpack-bundle-analyzer dist/angular-dashboard-sandbox/stats.json
 
 ## 📄 授權
 
-MIT License
+[MIT License](./LICENSE)
 
 ## 🔗 相關資源
 

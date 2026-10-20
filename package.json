@@ -7,6 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:ci": "ng test --watch=false --browsers=ChromeHeadlessCI",
     "test:watch": "ng test --watch",
     "test:coverage": "ng test --code-coverage",
     "lint": "ng lint",
@@ -28,6 +29,7 @@
     ]
   },
   "private": true,
+  "license": "MIT",
   "engines": {
     "node": "^22.12.0 || ^24.0.0",
     "pnpm": ">=9.0.0"
