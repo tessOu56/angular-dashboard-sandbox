@@ -1,46 +1,34 @@
-import {
-  Directive,
-  Input,
-  TemplateRef,
-  ViewContainerRef,
-  OnInit,
-  OnDestroy,
-  inject,
-} from '@angular/core';
+import { Directive, TemplateRef, ViewContainerRef, effect, inject, input } from '@angular/core';
 import { PermissionService } from '../../core/auth/permission.service';
 
 @Directive({
   selector: '[hasRole]',
   standalone: true,
 })
-export class HasRoleDirective implements OnInit, OnDestroy {
-  private templateRef = inject(TemplateRef<any>);
-  private viewContainer = inject(ViewContainerRef);
-  private permissionService = inject(PermissionService);
+export class HasRoleDirective {
+  private readonly templateRef = inject(TemplateRef<unknown>);
+  private readonly viewContainer = inject(ViewContainerRef);
+  private readonly permissionService = inject(PermissionService);
+
+  readonly hasRole = input<string | string[]>([]);
 
   private hasView = false;
-  private roles: string[] = [];
 
-  @Input() set hasRole(roles: string | string[]) {
-    this.roles = Array.isArray(roles) ? roles : [roles];
-    this.updateView();
+  constructor() {
+    effect(() => {
+      const raw = this.hasRole();
+      const roles = Array.isArray(raw) ? raw : [raw];
+      this.updateView(roles);
+    });
   }
 
-  ngOnInit(): void {
-    this.updateView();
-  }
-
-  ngOnDestroy(): void {
-    // 清理工作
-  }
-
-  private updateView(): void {
-    if (!this.roles || this.roles.length === 0) {
+  private updateView(roles: string[]): void {
+    if (!roles.length) {
       this.show();
       return;
     }
 
-    const hasRole = this.permissionService.hasAnyRole(this.roles);
+    const hasRole = this.permissionService.hasAnyRole(roles);
 
     if (hasRole && !this.hasView) {
       this.show();
@@ -50,6 +38,9 @@ export class HasRoleDirective implements OnInit, OnDestroy {
   }
 
   private show(): void {
+    if (this.hasView) {
+      return;
+    }
     this.viewContainer.createEmbeddedView(this.templateRef);
     this.hasView = true;
   }

@@ -1,5 +1,4 @@
-import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
-
+import { Component, computed, input, output } from '@angular/core';
 
 export type ButtonVariant =
   | 'primary'
@@ -21,14 +20,14 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
       [class]="buttonClasses()"
       [disabled]="disabled() || loading()"
       (click)="onClick()"
-      [type]="type"
-      >
+      [type]="type()"
+    >
       @if (loading()) {
         <span class="spinner"></span>
       }
       <ng-content></ng-content>
     </button>
-    `,
+  `,
   styles: [
     `
       button {
@@ -158,37 +157,20 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
   ],
 })
 export class ButtonComponent {
-  @Input() variant: ButtonVariant = 'primary';
-  @Input() size: ButtonSize = 'md';
-  @Input() disabled = signal(false);
-  @Input() loading = signal(false);
-  @Input() type: 'button' | 'submit' | 'reset' = 'button';
-  @Input() fullWidth = false;
+  readonly variant = input<ButtonVariant>('primary');
+  readonly size = input<ButtonSize>('md');
+  readonly disabled = input(false);
+  readonly loading = input(false);
+  readonly type = input<'button' | 'submit' | 'reset'>('button');
+  readonly fullWidth = input(false);
 
-  @Output() clicked = new EventEmitter<void>();
+  readonly clicked = output<void>();
 
-  buttonClasses = signal('');
-
-  ngOnInit() {
-    this.updateClasses();
-  }
-
-  ngOnChanges() {
-    this.updateClasses();
-  }
-
-  private updateClasses() {
-    const classes = [
-      'btn',
-      `btn-${this.variant}`,
-      `btn-${this.size}`,
-      this.fullWidth ? 'w-full' : '',
-    ]
+  readonly buttonClasses = computed(() =>
+    ['btn', `btn-${this.variant()}`, `btn-${this.size()}`, this.fullWidth() ? 'w-full' : '']
       .filter(Boolean)
-      .join(' ');
-
-    this.buttonClasses.set(classes);
-  }
+      .join(' '),
+  );
 
   onClick() {
     if (!this.disabled() && !this.loading()) {

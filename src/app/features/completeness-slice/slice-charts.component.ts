@@ -1,4 +1,3 @@
-
 import { Component, computed, input } from '@angular/core';
 import { BarDatum, maxValue } from './chart-stats';
 
@@ -16,8 +15,7 @@ import { BarDatum, maxValue } from './chart-stats';
           role="img"
           aria-label="Event severity counts"
           >
-          @for (bar of severityBars(); track bar; let i = $index) {
-            <ng-container>
+          @for (bar of severityBars(); track bar.key; let i = $index) {
               <rect
                 [attr.x]="i * 80 + 18"
                 [attr.y]="barTop(bar.value, severityMax())"
@@ -37,7 +35,6 @@ import { BarDatum, maxValue } from './chart-stats';
                 >
                 {{ bar.value }}
               </text>
-            </ng-container>
           }
         </svg>
       </section>
@@ -45,7 +42,7 @@ import { BarDatum, maxValue } from './chart-stats';
       <section class="chart-card" aria-labelledby="type-chart-title">
         <h3 id="type-chart-title">SSE event types</h3>
         <ul class="type-list">
-          @for (bar of typeBars(); track bar) {
+          @for (bar of typeBars(); track bar.key) {
             <li>
               <span class="type-label">{{ bar.label }}</span>
               <span class="type-track">

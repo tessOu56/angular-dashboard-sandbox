@@ -1,18 +1,18 @@
 # Angular Dashboard Sandbox
 
 [![CI](https://github.com/tessOu56/angular-dashboard-sandbox/actions/workflows/ci.yml/badge.svg)](https://github.com/tessOu56/angular-dashboard-sandbox/actions/workflows/ci.yml)
-[![Angular](https://img.shields.io/badge/Angular-20.3.0-red.svg)](https://angular.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-blue.svg)](https://www.typescriptlang.org/)
+[![Angular](https://img.shields.io/badge/Angular-22.2.3-red.svg)](https://angular.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0.3-blue.svg)](https://www.typescriptlang.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-9.0.0-orange.svg)](https://pnpm.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-Angular 20 **labelled sandbox** for B2B ops UI patterns: Signals, route/UI RBAC, dual-control approvals, SSE event feed, audit log. **No hosted demo.** Data is a **mock backend**. This is not a regulated or production admin console.
+Angular 22 **labelled sandbox** for B2B ops UI patterns: Signals, route/UI RBAC, dual-control approvals, SSE event feed, audit log. **No hosted demo.** Data is a **mock backend**. This is not a regulated or production admin console.
 
 ## What this proves
 
 | Proof | Honest bound |
 |-------|----------------|
-| **Angular 20 + Signals** | Standalone components, Signal Store, typed forms — run locally (`pnpm start` → http://localhost:4200). |
+| **Angular 22 + Signals** | Standalone components, Signal Store, typed forms — run locally (`pnpm start` → http://localhost:4200). |
 | **Ops UI patterns** | Login → approvals / audit → SSE. Dual-control is an in-app rule (budget/purchase ≥ $10k), **not** a compliance certification. |
 | **Not claimed** | No public URL. No live API. Backend integration is unfinished. Accessibility helpers exist; **not** a WCAG audit. |
 
@@ -27,7 +27,7 @@ Local only: `pnpm start` → http://localhost:4200. Unauthenticated visits go to
 | Sign in | ![Sign in](docs/screenshots/login-desktop.png) | ![Sign in, mobile](docs/screenshots/login-mobile.png) |
 | Overview (`/slice`) | ![Overview](docs/screenshots/slice-desktop.png) | ![Overview, mobile](docs/screenshots/slice-mobile.png) |
 
-**GitHub About:** `Angular 20 B2B ops sandbox — Signals, RBAC, dual-control, SSE. Local mock API only; not hosted, not a regulated system.`  
+**GitHub About:** `Angular 22 B2B ops sandbox — Signals, RBAC, dual-control, SSE. Local mock API only; not hosted, not a regulated system.`  
 **Topics:** `angular` · `typescript` · `rbac` · `signals` · `labelled-demo`
 
 ## 🎯 專案簡介
@@ -49,7 +49,7 @@ Local only: `pnpm start` → http://localhost:4200. Unauthenticated visits go to
 
 ## 📋 環境要求
 
-- **Node.js**: 22.12+ 或 24（Node 20 已於 2026-04-30 EOL；`package.json` `engines` 只允許受支援的 LTS）
+- **Node.js**: 22.22.3+、24.15+ 或 26（Angular 22 最低 Node 22.22.3；`package.json` `engines` 與官方相容表一致）
 - **pnpm**: 9.0.0+
 - **瀏覽器**: 支援 ES2022 的現代瀏覽器
 
@@ -313,23 +313,24 @@ In-process **mock SDK only**. There is no hosted or public API. `sdk.*` calls ne
 ### SDK 使用方式（mock）
 
 ```typescript
+import { firstValueFrom } from 'rxjs';
 import { sdk } from '../shared/sdk';
 
 // 審批 API
-const approvals = await sdk.approvals.list().toPromise();
-const approval = await sdk.approvals.get(id).toPromise();
-await sdk.approvals.approve(id, comment).toPromise();
+const approvals = await firstValueFrom(sdk.approvals.list());
+const approval = await firstValueFrom(sdk.approvals.get(id));
+await firstValueFrom(sdk.approvals.approve(id, comment));
 
 // 旗標 API
-const flags = await sdk.flags.list().toPromise();
-await sdk.flags.publish(id).toPromise();
+const flags = await firstValueFrom(sdk.flags.list());
+await firstValueFrom(sdk.flags.publish(id));
 
 // 事件 API
-const events = await sdk.events.list().toPromise();
+const events = await firstValueFrom(sdk.events.list());
 
 // 稽核 API
-const auditLogs = await sdk.audit.list(filters).toPromise();
-const csv = await sdk.audit.export().toPromise();
+const auditLogs = await firstValueFrom(sdk.audit.list(filters));
+const csv = await firstValueFrom(sdk.audit.export());
 ```
 
 ## 🔧 開發工具

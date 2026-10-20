@@ -3,7 +3,7 @@ import { CanMatchFn, Router } from '@angular/router';
 import { PermissionService } from './permission.service';
 import { AuthService } from './auth.service';
 
-export const RequirePermGuard: CanMatchFn = (route, segments) => {
+export const RequirePermGuard: CanMatchFn = (route, _segments, _currentSnapshot) => {
   const permissionService = inject(PermissionService);
   const authService = inject(AuthService);
   const router = inject(Router);

@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { TableComponent } from '../../../shared/ui/table/table.component';
 import { HasPermDirective } from '../../../shared/directives';
 import { sdk, Permission, AuditLog } from '../../../../shared/sdk';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-audit-list',
@@ -164,7 +165,7 @@ export class AuditListComponent implements OnInit {
         params['endDate'] = new Date(this.endDate);
       }
 
-      const response = await sdk.audit.list(params).toPromise();
+      const response = await firstValueFrom(sdk.audit.list(params));
 
       if (response) {
         this.auditLogs.set(response.data);
@@ -206,7 +207,7 @@ export class AuditListComponent implements OnInit {
   async exportLogs(): Promise<void> {
     this.loading.set(true);
     try {
-      const blob = await sdk.audit.export(this.filters).toPromise();
+      const blob = await firstValueFrom(sdk.audit.export(this.filters));
       if (blob) {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');

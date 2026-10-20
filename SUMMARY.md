@@ -102,14 +102,13 @@
 - [x] PermissionService 完整測試
 - [x] ApprovalsStore 狀態測試
 - [x] 測試工具函數
-- [x] Karma 設定
+- [x] Vitest 設定
 
 **檔案**:
 
 - `src/app/core/auth/permission.service.spec.ts`
 - `src/app/store/approvals.store.spec.ts`
 - `src/app/testing/test-helpers.ts`
-- `karma.conf.js`
 
 ### 10. E2E 測試 ✅
 
@@ -231,7 +230,7 @@
 
 ## 🎓 技術亮點
 
-### Angular 20.3.0 現代特性
+### Angular 22.2.3 現代特性
 
 - ✅ Standalone Components
 - ✅ Signals（響應式狀態管理）
@@ -241,7 +240,7 @@
 - ✅ computed() 計算屬性
 - ✅ effect() 副作用
 
-### TypeScript 5.9.2 進階功能
+### TypeScript 6.0.3 進階功能
 
 - ✅ 嚴格型別檢查
 - ✅ Generic Types

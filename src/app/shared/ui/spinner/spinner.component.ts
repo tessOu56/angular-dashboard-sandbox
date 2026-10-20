@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 
 
 @Component({
@@ -6,10 +6,10 @@ import { Component, Input } from '@angular/core';
   standalone: true,
   imports: [],
   template: `
-    <div class="spinner-container" [class]="'size-' + size">
-      <div class="spinner" [class]="variant"></div>
-      @if (message) {
-        <p class="spinner-message">{{ message }}</p>
+    <div class="spinner-container" [class]="'size-' + size()">
+      <div class="spinner" [class]="variant()"></div>
+      @if (message()) {
+        <p class="spinner-message">{{ message() }}</p>
       }
     </div>
     `,
@@ -81,7 +81,7 @@ import { Component, Input } from '@angular/core';
   ],
 })
 export class SpinnerComponent {
-  @Input() size: 'sm' | 'md' | 'lg' = 'md';
-  @Input() variant: 'primary' | 'secondary' | 'success' | 'danger' = 'primary';
-  @Input() message?: string;
+  readonly size = input<'sm' | 'md' | 'lg'>('md');
+  readonly variant = input<'primary' | 'secondary' | 'success' | 'danger'>('primary');
+  readonly message = input<string | undefined>(undefined);
 }

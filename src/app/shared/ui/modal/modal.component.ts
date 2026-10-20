@@ -1,51 +1,34 @@
-import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
+import { Component, signal, input, output } from '@angular/core';
 
-import { trigger, transition, style, animate, state } from '@angular/animations';
 import { ButtonComponent } from '../button/button.component';
 
 @Component({
   selector: 'app-modal',
   standalone: true,
   imports: [ButtonComponent],
-  animations: [
-    trigger('modalAnimation', [
-      transition(':enter', [
-        style({ opacity: 0 }),
-        animate('200ms ease-out', style({ opacity: 1 })),
-      ]),
-      transition(':leave', [animate('200ms ease-in', style({ opacity: 0 }))]),
-    ]),
-    trigger('contentAnimation', [
-      transition(':enter', [
-        style({ transform: 'scale(0.9)', opacity: 0 }),
-        animate('200ms ease-out', style({ transform: 'scale(1)', opacity: 1 })),
-      ]),
-      transition(':leave', [
-        animate('200ms ease-in', style({ transform: 'scale(0.9)', opacity: 0 })),
-      ]),
-    ]),
-  ],
   template: `
-    @if (isOpen) {
+    @if (isOpen()) {
       <div
         class="modal-overlay"
-        [@modalAnimation]
+        animate.enter="modal-enter"
+        animate.leave="modal-leave"
         (click)="onOverlayClick()"
         role="dialog"
         aria-modal="true"
-        [attr.aria-labelledby]="title ? 'modal-title' : null"
+        [attr.aria-labelledby]="title() ? 'modal-title' : null"
         >
         <div
           class="modal-content"
-          [class]="'size-' + size"
-          [@contentAnimation]
+          [class]="'size-' + size()"
+          animate.enter="modal-content-enter"
+          animate.leave="modal-content-leave"
           (click)="$event.stopPropagation()"
           >
           <!-- Header -->
-          @if (showHeader) {
+          @if (showHeader()) {
             <div class="modal-header">
-              <h2 id="modal-title" class="modal-title">{{ title }}</h2>
-              @if (dismissible) {
+              <h2 id="modal-title" class="modal-title">{{ title() }}</h2>
+              @if (dismissible()) {
                 <button class="modal-close" (click)="close()" aria-label="Close dialog">
                   ✕
                 </button>
@@ -57,13 +40,13 @@ import { ButtonComponent } from '../button/button.component';
             <ng-content></ng-content>
           </div>
           <!-- Footer -->
-          @if (showFooter) {
+          @if (showFooter()) {
             <div class="modal-footer">
               <ng-content select="[modal-footer]"></ng-content>
-              @if (!hasFooterContent) {
+              @if (!hasFooterContent()) {
                 <div class="default-footer">
-                  <app-button variant="outline" (onClick)="close()">Cancel</app-button>
-                  <app-button variant="primary" (onClick)="confirm()">Confirm</app-button>
+                  <app-button variant="outline" (clicked)="close()">Cancel</app-button>
+                  <app-button variant="primary" (clicked)="confirm()">Confirm</app-button>
                 </div>
               }
             </div>
@@ -168,20 +151,76 @@ import { ButtonComponent } from '../button/button.component';
         display: flex;
         gap: 0.75rem;
       }
+
+      @keyframes modal-fade-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes modal-fade-out {
+        from {
+          opacity: 1;
+        }
+        to {
+          opacity: 0;
+        }
+      }
+
+      @keyframes modal-scale-in {
+        from {
+          transform: scale(0.9);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes modal-scale-out {
+        from {
+          transform: scale(1);
+          opacity: 1;
+        }
+        to {
+          transform: scale(0.9);
+          opacity: 0;
+        }
+      }
+
+      .modal-enter {
+        animation: modal-fade-in 200ms ease-out;
+      }
+
+      .modal-leave {
+        animation: modal-fade-out 200ms ease-in;
+      }
+
+      .modal-content-enter {
+        animation: modal-scale-in 200ms ease-out;
+      }
+
+      .modal-content-leave {
+        animation: modal-scale-out 200ms ease-in;
+      }
     `,
   ],
 })
 export class ModalComponent {
-  @Input() title: string = '';
-  @Input() size: 'sm' | 'md' | 'lg' | 'xl' = 'md';
-  @Input() showHeader: boolean = true;
-  @Input() showFooter: boolean = true;
-  @Input() dismissible: boolean = true;
-  @Input() closeOnOverlayClick: boolean = true;
-  @Input() hasFooterContent: boolean = false;
+  readonly title = input<string>('');
+  readonly size = input<'sm' | 'md' | 'lg' | 'xl'>('md');
+  readonly showHeader = input<boolean>(true);
+  readonly showFooter = input<boolean>(true);
+  readonly dismissible = input<boolean>(true);
+  readonly closeOnOverlayClick = input<boolean>(true);
+  readonly hasFooterContent = input<boolean>(false);
 
-  @Output() onClose = new EventEmitter<void>();
-  @Output() onConfirm = new EventEmitter<void>();
+  readonly onClose = output<void>();
+  readonly onConfirm = output<void>();
 
   isOpen = signal(false);
 
@@ -201,7 +240,7 @@ export class ModalComponent {
   }
 
   onOverlayClick(): void {
-    if (this.closeOnOverlayClick && this.dismissible) {
+    if (this.closeOnOverlayClick() && this.dismissible()) {
       this.close();
     }
   }

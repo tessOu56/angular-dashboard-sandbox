@@ -1,13 +1,12 @@
 import {
   Component,
   Input,
-  Output,
-  EventEmitter,
   signal,
   computed,
-  TemplateRef,
+  input,
+  output
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VirtualScrollComponent } from '../virtual-scroll/virtual-scroll.component';
 import { TableColumn } from '../../../../shared/sdk';
@@ -21,13 +20,13 @@ import { TableColumn } from '../../../../shared/sdk';
 @Component({
   selector: 'app-data-grid',
   standalone: true,
-  imports: [CommonModule, FormsModule, VirtualScrollComponent],
+  imports: [FormsModule, VirtualScrollComponent, NgTemplateOutlet],
   template: `
     <div class="data-grid">
       <!-- Header -->
       <div class="grid-header">
         <div class="grid-row header-row">
-          @if (selectable) {
+          @if (selectable()) {
             <div class="grid-cell header-cell checkbox-cell">
               <input
                 type="checkbox"
@@ -64,11 +63,11 @@ import { TableColumn } from '../../../../shared/sdk';
       </div>
     
       <!-- Body with Virtual Scroll -->
-      <div class="grid-body" [style.height.px]="height">
+      <div class="grid-body" [style.height.px]="height()">
         <app-virtual-scroll
           [items]="sortedData()"
-          [itemHeight]="rowHeight"
-          [bufferSize]="bufferSize"
+          [itemHeight]="rowHeight()"
+          [bufferSize]="bufferSize()"
           [itemTemplate]="rowTemplate"
           (scrollEnd)="onScrollEnd()"
           >
@@ -76,7 +75,7 @@ import { TableColumn } from '../../../../shared/sdk';
     
         <ng-template #rowTemplate let-item let-index="index">
           <div class="grid-row" [class.selected]="isSelected(item)" (click)="onRowClick(item)">
-            @if (selectable) {
+            @if (selectable()) {
               <div class="grid-cell checkbox-cell">
                 <input
                   type="checkbox"
@@ -94,7 +93,8 @@ import { TableColumn } from '../../../../shared/sdk';
                 >
                 @if (column.template) {
                   <ng-container
-                    *ngTemplateOutlet="column.template; context: { $implicit: item, column: column }"
+                    [ngTemplateOutlet]="column.template"
+                    [ngTemplateOutletContext]="{ $implicit: item, column: column }"
                   ></ng-container>
                 } @else {
                   <span>{{ getCellValue(item, column) }}</span>
@@ -110,7 +110,7 @@ import { TableColumn } from '../../../../shared/sdk';
         <div class="empty-state">
           <div class="empty-icon">📭</div>
           <h3>無資料</h3>
-          <p>{{ emptyMessage }}</p>
+          <p>{{ emptyMessage() }}</p>
         </div>
       }
     
@@ -275,16 +275,19 @@ export class DataGridComponent<T = any> {
     return this._loading();
   }
 
-  @Input() height: number = 600; // Grid height
-  @Input() rowHeight: number = 50; // Row height for virtual scroll
-  @Input() bufferSize: number = 5; // Buffer size for virtual scroll
-  @Input() selectable: boolean = false;
-  @Input() emptyMessage: string = '目前沒有資料';
+  readonly height = input<number>(600); // Grid height
+  readonly rowHeight = input<number>(50); // Row height for virtual scroll
+  readonly bufferSize = input<number>(5); // Buffer size for virtual scroll
+  readonly selectable = input<boolean>(false);
+  readonly emptyMessage = input<string>('目前沒有資料');
 
-  @Output() rowClick = new EventEmitter<T>();
-  @Output() selectionChange = new EventEmitter<T[]>();
-  @Output() sortChange = new EventEmitter<{ column: string; direction: 'asc' | 'desc' }>();
-  @Output() scrollEnd = new EventEmitter<void>();
+  readonly rowClick = output<T>();
+  readonly selectionChange = output<T[]>();
+  readonly sortChange = output<{
+    column: string;
+    direction: 'asc' | 'desc';
+}>();
+  readonly scrollEnd = output<void>();
 
   private _data = signal<T[]>([]);
   private _columns = signal<TableColumn<T>[]>([]);

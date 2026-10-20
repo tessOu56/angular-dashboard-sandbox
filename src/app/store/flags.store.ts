@@ -1,5 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { sdk, FeatureFlag, PaginationParams, FilterParams } from '../../shared/sdk';
+import { firstValueFrom } from 'rxjs';
 
 export interface FlagFilters {
   status?: string[];
@@ -121,7 +122,7 @@ export class FlagsStore {
         ...this._filters(),
       };
 
-      const response = await sdk.flags.list(params).toPromise();
+      const response = await firstValueFrom(sdk.flags.list(params));
 
       if (response) {
         this._flags.set(response.data);
@@ -136,7 +137,7 @@ export class FlagsStore {
 
   async fetchFlag(id: string): Promise<FeatureFlag | null> {
     try {
-      const flag = await sdk.flags.get(id).toPromise();
+      const flag = await firstValueFrom(sdk.flags.get(id));
       if (flag) {
         // Update the flag in the list
         this._flags.update((flags) => flags.map((f) => (f.id === id ? flag : f)));
@@ -153,7 +154,7 @@ export class FlagsStore {
     this._error.set(null);
 
     try {
-      const newFlag = await sdk.flags.create(flag).toPromise();
+      const newFlag = await firstValueFrom(sdk.flags.create(flag));
       if (newFlag) {
         this._flags.update((flags) => [newFlag, ...flags]);
         this._total.update((total) => total + 1);
@@ -172,7 +173,7 @@ export class FlagsStore {
     this._error.set(null);
 
     try {
-      const updatedFlag = await sdk.flags.update(id, flag).toPromise();
+      const updatedFlag = await firstValueFrom(sdk.flags.update(id, flag));
       if (updatedFlag) {
         this._flags.update((flags) => flags.map((f) => (f.id === id ? updatedFlag : f)));
       }
@@ -190,7 +191,7 @@ export class FlagsStore {
     this._error.set(null);
 
     try {
-      const publishedFlag = await sdk.flags.publish(id).toPromise();
+      const publishedFlag = await firstValueFrom(sdk.flags.publish(id));
       if (publishedFlag) {
         this._flags.update((flags) => flags.map((f) => (f.id === id ? publishedFlag : f)));
       }
@@ -208,7 +209,7 @@ export class FlagsStore {
     this._error.set(null);
 
     try {
-      const archivedFlag = await sdk.flags.archive(id).toPromise();
+      const archivedFlag = await firstValueFrom(sdk.flags.archive(id));
       if (archivedFlag) {
         this._flags.update((flags) => flags.map((f) => (f.id === id ? archivedFlag : f)));
       }

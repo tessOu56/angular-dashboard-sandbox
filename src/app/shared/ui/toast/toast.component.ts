@@ -1,30 +1,19 @@
 import { Component, inject } from '@angular/core';
 
 import { ToastService, Toast } from './toast.service';
-import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-toast',
   standalone: true,
   imports: [],
-  animations: [
-    trigger('toastAnimation', [
-      transition(':enter', [
-        style({ transform: 'translateX(100%)', opacity: 0 }),
-        animate('300ms ease-out', style({ transform: 'translateX(0)', opacity: 1 })),
-      ]),
-      transition(':leave', [
-        animate('200ms ease-in', style({ transform: 'translateX(100%)', opacity: 0 })),
-      ]),
-    ]),
-  ],
   template: `
     <div class="toast-container">
-      @for (toast of toastService.toasts(); track toast) {
+      @for (toast of toastService.toasts(); track toast.id) {
         <div
           class="toast"
           [class]="'toast-' + toast.type"
-          [@toastAnimation]
+          animate.enter="toast-enter"
+          animate.leave="toast-leave"
           >
           <div class="toast-icon">{{ getIcon(toast.type) }}</div>
           <div class="toast-content">
@@ -122,6 +111,36 @@ import { trigger, transition, style, animate } from '@angular/animations';
 
       .toast-dismiss:hover {
         color: #374151;
+      }
+
+      @keyframes toast-in {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes toast-out {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+
+      .toast-enter {
+        animation: toast-in 300ms ease-out;
+      }
+
+      .toast-leave {
+        animation: toast-out 200ms ease-in;
       }
     `,
   ],

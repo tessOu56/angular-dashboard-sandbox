@@ -1,5 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { sdk, ApprovalRequest, PaginationParams, FilterParams } from '../../shared/sdk';
+import { firstValueFrom } from 'rxjs';
 
 export interface ApprovalFilters {
   status?: string[];
@@ -122,7 +123,7 @@ export class ApprovalsStore {
         ...this._filters(),
       };
 
-      const response = await sdk.approvals.list(params).toPromise();
+      const response = await firstValueFrom(sdk.approvals.list(params));
 
       if (response) {
         this._approvals.set(response.data);
@@ -137,7 +138,7 @@ export class ApprovalsStore {
 
   async fetchApproval(id: string): Promise<ApprovalRequest | null> {
     try {
-      const approval = await sdk.approvals.get(id).toPromise();
+      const approval = await firstValueFrom(sdk.approvals.get(id));
       if (approval) {
         // Update the approval in the list
         this._approvals.update((approvals) => approvals.map((a) => (a.id === id ? approval : a)));
@@ -154,7 +155,7 @@ export class ApprovalsStore {
     this._error.set(null);
 
     try {
-      const newApproval = await sdk.approvals.create(approval).toPromise();
+      const newApproval = await firstValueFrom(sdk.approvals.create(approval));
       if (newApproval) {
         this._approvals.update((approvals) => [newApproval, ...approvals]);
         this._total.update((total) => total + 1);
@@ -176,7 +177,7 @@ export class ApprovalsStore {
     this._error.set(null);
 
     try {
-      const updatedApproval = await sdk.approvals.update(id, approval).toPromise();
+      const updatedApproval = await firstValueFrom(sdk.approvals.update(id, approval));
       if (updatedApproval) {
         this._approvals.update((approvals) =>
           approvals.map((a) => (a.id === id ? updatedApproval : a))
@@ -196,7 +197,7 @@ export class ApprovalsStore {
     this._error.set(null);
 
     try {
-      const approvedApproval = await sdk.approvals.approve(id, comment).toPromise();
+      const approvedApproval = await firstValueFrom(sdk.approvals.approve(id, comment));
       if (approvedApproval) {
         this._approvals.update((approvals) =>
           approvals.map((a) => (a.id === id ? approvedApproval : a))
@@ -216,7 +217,7 @@ export class ApprovalsStore {
     this._error.set(null);
 
     try {
-      const rejectedApproval = await sdk.approvals.reject(id, comment).toPromise();
+      const rejectedApproval = await firstValueFrom(sdk.approvals.reject(id, comment));
       if (rejectedApproval) {
         this._approvals.update((approvals) =>
           approvals.map((a) => (a.id === id ? rejectedApproval : a))

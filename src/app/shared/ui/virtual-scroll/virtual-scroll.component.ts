@@ -1,15 +1,15 @@
 import {
   Component,
-  Input,
-  Output,
-  EventEmitter,
-  signal,
   computed,
   effect,
   ElementRef,
-  ViewChild,
+  input,
+  output,
+  signal,
+  TemplateRef,
+  viewChild,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 
 /**
  * Virtual Scroll Component
@@ -20,29 +20,26 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-virtual-scroll',
   standalone: true,
-  imports: [CommonModule],
+  imports: [NgTemplateOutlet],
   template: `
     <div class="virtual-scroll-container" #container (scroll)="onScroll($event)">
       <div class="virtual-scroll-spacer" [style.height.px]="totalHeight()"></div>
       <div class="virtual-scroll-content" [style.transform]="contentTransform()">
-        @for (item of visibleItems(); track trackByFn($index, item)) {
-          <div
-            class="virtual-scroll-item"
-            [style.height.px]="itemHeight"
-            >
-            @if (itemTemplate) {
+        @for (item of visibleItems(); track item.__index) {
+          <div class="virtual-scroll-item" [style.height.px]="itemHeight()">
+            @if (itemTemplate(); as template) {
               <ng-container
-                *ngTemplateOutlet="itemTemplate; context: { $implicit: item, index: item.__index }"
+                [ngTemplateOutlet]="template"
+                [ngTemplateOutletContext]="{ $implicit: item, index: item.__index }"
               ></ng-container>
-            }
-            @if (!itemTemplate) {
+            } @else {
               {{ item }}
             }
           </div>
         }
       </div>
     </div>
-    `,
+  `,
   styles: [
     `
       .virtual-scroll-container {
@@ -75,43 +72,38 @@ import { CommonModule } from '@angular/common';
   ],
 })
 export class VirtualScrollComponent<T> {
-  @ViewChild('container') container!: ElementRef<HTMLDivElement>;
+  readonly container = viewChild.required<ElementRef<HTMLDivElement>>('container');
 
-  @Input() set items(value: T[]) {
-    this._items.set(value);
-  }
+  readonly items = input<T[]>([]);
+  readonly itemHeight = input<number>(50);
+  readonly bufferSize = input<number>(5);
+  readonly itemTemplate = input<TemplateRef<unknown> | null>(null);
 
-  @Input() itemHeight: number = 50;
-  @Input() bufferSize: number = 5; // 前後緩衝項目數
-  @Input() itemTemplate: any;
+  readonly scrollEnd = output<void>();
+  readonly itemsChange = output<T[]>();
 
-  @Output() scrollEnd = new EventEmitter<void>();
-  @Output() itemsChange = new EventEmitter<T[]>();
-
-  private _items = signal<T[]>([]);
   private scrollTop = signal(0);
   private containerHeight = signal(0);
 
-  // Computed values
-  public readonly totalHeight = computed(() => this._items().length * this.itemHeight);
+  public readonly totalHeight = computed(() => this.items().length * this.itemHeight());
 
   public readonly visibleStartIndex = computed(() => {
-    const index = Math.floor(this.scrollTop() / this.itemHeight) - this.bufferSize;
+    const index = Math.floor(this.scrollTop() / this.itemHeight()) - this.bufferSize();
     return Math.max(0, index);
   });
 
   public readonly visibleEndIndex = computed(() => {
-    const itemsPerView = Math.ceil(this.containerHeight() / this.itemHeight);
-    const index = Math.floor(this.scrollTop() / this.itemHeight) + itemsPerView + this.bufferSize;
-    return Math.min(this._items().length, index);
+    const itemsPerView = Math.ceil(this.containerHeight() / this.itemHeight());
+    const index =
+      Math.floor(this.scrollTop() / this.itemHeight()) + itemsPerView + this.bufferSize();
+    return Math.min(this.items().length, index);
   });
 
   public readonly visibleItems = computed(() => {
     const start = this.visibleStartIndex();
     const end = this.visibleEndIndex();
-    const items = this._items().slice(start, end);
+    const items = this.items().slice(start, end);
 
-    // Add index for tracking
     return items.map((item, index) => ({
       ...item,
       __index: start + index,
@@ -119,14 +111,13 @@ export class VirtualScrollComponent<T> {
   });
 
   public readonly contentTransform = computed(() => {
-    const offset = this.visibleStartIndex() * this.itemHeight;
+    const offset = this.visibleStartIndex() * this.itemHeight();
     return `translateY(${offset}px)`;
   });
 
   constructor() {
-    // Update container height when component initializes
     effect(() => {
-      if (this.container) {
+      if (this.container()) {
         this.updateContainerHeight();
       }
     });
@@ -136,7 +127,6 @@ export class VirtualScrollComponent<T> {
     const target = event.target as HTMLDivElement;
     this.scrollTop.set(target.scrollTop);
 
-    // Check if scrolled to bottom
     const scrollHeight = target.scrollHeight;
     const clientHeight = target.clientHeight;
     const scrollTop = target.scrollTop;
@@ -147,37 +137,26 @@ export class VirtualScrollComponent<T> {
   }
 
   private updateContainerHeight(): void {
-    if (this.container?.nativeElement) {
-      this.containerHeight.set(this.container.nativeElement.clientHeight);
+    const container = this.container();
+    if (container?.nativeElement) {
+      this.containerHeight.set(container.nativeElement.clientHeight);
     }
   }
 
-  trackByFn(index: number, item: any): any {
-    return item.__index ?? index;
-  }
-
-  /**
-   * Scroll to specific index
-   */
   scrollToIndex(index: number): void {
-    if (this.container?.nativeElement) {
-      const offset = index * this.itemHeight;
-      this.container.nativeElement.scrollTop = offset;
+    const container = this.container();
+    if (container?.nativeElement) {
+      const offset = index * this.itemHeight();
+      container.nativeElement.scrollTop = offset;
     }
   }
 
-  /**
-   * Scroll to top
-   */
   scrollToTop(): void {
     this.scrollToIndex(0);
   }
 
-  /**
-   * Scroll to bottom
-   */
   scrollToBottom(): void {
-    const lastIndex = this._items().length - 1;
+    const lastIndex = this.items().length - 1;
     this.scrollToIndex(lastIndex);
   }
 }

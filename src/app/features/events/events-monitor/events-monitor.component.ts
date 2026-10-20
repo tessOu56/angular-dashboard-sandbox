@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
@@ -9,7 +9,7 @@ import { EventsSseService } from '../../../core/events/events-sse.service';
 @Component({
   selector: 'app-events-monitor',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TableComponent],
+  imports: [RouterModule, FormsModule, TableComponent, DatePipe],
   template: `
     <div class="page">
       <header class="page-header">

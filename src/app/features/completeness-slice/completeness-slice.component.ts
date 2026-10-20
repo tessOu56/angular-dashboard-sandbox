@@ -1,4 +1,3 @@
-
 import { Component, OnDestroy, OnInit, computed, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { TableComponent } from '../../shared/ui/table/table.component';

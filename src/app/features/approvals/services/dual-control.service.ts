@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { sdk, ApprovalRequest, ApprovalStatus, Permission } from '../../../../shared/sdk';
+import { ApprovalRequest, ApprovalStatus, Permission } from '../../../../shared/sdk';
 import { PermissionService } from '../../../core/auth/permission.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
@@ -257,6 +257,5 @@ export class DualControlService {
     };
 
     console.log('Audit log created:', auditData);
-    // await sdk.audit.create(auditData).toPromise();
   }
 }

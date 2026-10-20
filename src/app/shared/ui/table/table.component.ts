@@ -1,11 +1,11 @@
-import { Component, Input, Output, EventEmitter, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, signal, computed, input, output } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { TableColumn, PaginatedResponse } from '../../../../shared/sdk';
 
 @Component({
   selector: 'app-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [DatePipe],
   template: `
     <div class="table-container">
       @if (showHeader()) {
@@ -39,7 +39,7 @@ import { TableColumn, PaginatedResponse } from '../../../../shared/sdk';
                       />
                   </th>
                 }
-                @for (column of _columns(); track column) {
+                @for (column of _columns(); track column.key) {
                   <th [class]="getColumnClasses(column)">
                     @if (column.sortable) {
                       <button
@@ -64,7 +64,7 @@ import { TableColumn, PaginatedResponse } from '../../../../shared/sdk';
               </tr>
             </thead>
             <tbody>
-              @for (item of _data(); track trackByFn($index, item)) {
+              @for (item of _data(); track trackByFn()($index, item)) {
                 <tr
                   [class.selected]="isSelected(item)"
                   [class.clickable]="_clickable()"
@@ -84,13 +84,13 @@ import { TableColumn, PaginatedResponse } from '../../../../shared/sdk';
                         />
                     </td>
                   }
-                  @for (column of _columns(); track column) {
+                  @for (column of _columns(); track column.key) {
                     <td [class]="getColumnClasses(column)">
                       @switch (column.key) {
                         @case ('status') {
                           <span
                             class="badge"
-                            [ngClass]="getStatusClass(getItemValue(item, column.key))"
+                            [class]="getStatusClass(getItemValue(item, column.key))"
                             >
                             {{ formatToken(getItemValue(item, column.key)) }}
                           </span>
@@ -98,7 +98,7 @@ import { TableColumn, PaginatedResponse } from '../../../../shared/sdk';
                         @case ('priority') {
                           <span
                             class="badge"
-                            [ngClass]="getPriorityClass(getItemValue(item, column.key))"
+                            [class]="getPriorityClass(getItemValue(item, column.key))"
                             >
                             {{ formatToken(getItemValue(item, column.key)) }}
                           </span>
@@ -106,7 +106,7 @@ import { TableColumn, PaginatedResponse } from '../../../../shared/sdk';
                         @case ('severity') {
                           <span
                             class="badge"
-                            [ngClass]="getPriorityClass(getItemValue(item, column.key))"
+                            [class]="getPriorityClass(getItemValue(item, column.key))"
                             >
                             {{ formatToken(getItemValue(item, column.key)) }}
                           </span>
@@ -351,12 +351,15 @@ export class TableComponent<T = any> {
     this._selectedItems.set(value);
   }
 
-  @Input() trackByFn = (index: number, item: T) => (item as any).id || index;
+  readonly trackByFn = input((index: number, item: T) => (item as any).id || index);
 
-  @Output() rowClick = new EventEmitter<T>();
-  @Output() selectionChange = new EventEmitter<string[]>();
-  @Output() sortChange = new EventEmitter<{ column: string; direction: 'asc' | 'desc' }>();
-  @Output() pageChange = new EventEmitter<number>();
+  readonly rowClick = output<T>();
+  readonly selectionChange = output<string[]>();
+  readonly sortChange = output<{
+    column: string;
+    direction: 'asc' | 'desc';
+}>();
+  readonly pageChange = output<number>();
 
   currentPage = signal(1);
   pageSize = signal(20);

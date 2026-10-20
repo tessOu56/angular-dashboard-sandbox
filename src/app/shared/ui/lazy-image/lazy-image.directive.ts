@@ -1,4 +1,4 @@
-import { Directive, ElementRef, Input, OnInit, OnDestroy, inject } from '@angular/core';
+import { Directive, ElementRef, OnInit, OnDestroy, inject, input } from '@angular/core';
 
 /**
  * Lazy Image Directive
@@ -11,9 +11,8 @@ import { Directive, ElementRef, Input, OnInit, OnDestroy, inject } from '@angula
   standalone: true,
 })
 export class LazyImageDirective implements OnInit, OnDestroy {
-  @Input() appLazyImage: string = '';
-  @Input() placeholder: string =
-    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg"%3E%3C/svg%3E';
+  readonly appLazyImage = input<string>('');
+  readonly placeholder = input<string>('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg"%3E%3C/svg%3E');
 
   private el = inject(ElementRef);
   private observer?: IntersectionObserver;
@@ -47,7 +46,7 @@ export class LazyImageDirective implements OnInit, OnDestroy {
     }, options);
 
     // Set placeholder
-    this.el.nativeElement.src = this.placeholder;
+    this.el.nativeElement.src = this.placeholder();
     this.el.nativeElement.classList.add('lazy-loading');
 
     // Start observing
@@ -67,13 +66,14 @@ export class LazyImageDirective implements OnInit, OnDestroy {
       img.classList.add('lazy-error');
     };
 
-    if (!isSafeImageUrl(this.appLazyImage)) {
+    const appLazyImage = this.appLazyImage();
+    if (!isSafeImageUrl(appLazyImage)) {
       img.classList.remove('lazy-loading');
       img.classList.add('lazy-error');
       return;
     }
 
-    img.src = this.appLazyImage;
+    img.src = appLazyImage;
   }
 }
 
