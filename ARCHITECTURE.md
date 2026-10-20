@@ -339,26 +339,29 @@ this.eventsSse.stop();
 
 ## 路由結構
 
-```typescript
-/                       → 重導向到 /dashboard
+`/` and `**` redirect to `/slice` (honesty checkpoint). Mock-complete vs stub for every route: [README.md](./README.md#route-status).
+
+```
+/                       → 重導向到 /slice
 /login                  → 登入頁面
-/dashboard              → 儀表板 (VIEW_DASHBOARD)
-/approvals              → 審批列表 (VIEW_APPROVALS)
-/approvals/new          → 新增審批 (CREATE_APPROVAL)
-/approvals/:id          → 審批詳情 (VIEW_APPROVALS)
-/flags                  → 旗標列表 (VIEW_FLAGS)
-/flags/new              → 新增旗標 (MANAGE_FLAGS)
-/flags/:id              → 旗標詳情 (VIEW_FLAGS)
-/flags/:id/compare      → 旗標比較 (VIEW_FLAGS)
-/events                 → 事件監控 (VIEW_EVENTS)
-/events/:id             → 事件詳情 (VIEW_EVENTS)
-/settings               → 設定儀表板 (VIEW_SETTINGS)
-/settings/dictionary    → 字典管理 (VIEW_SETTINGS)
-/settings/webhooks      → Webhook 管理 (MANAGE_SETTINGS)
-/settings/permissions   → 權限管理 (MANAGE_SETTINGS)
-/audit                  → 稽核列表 (VIEW_AUDIT_TRAIL)
-/audit/:id              → 稽核詳情 (VIEW_AUDIT_TRAIL)
-/unauthorized           → 未授權頁面
+/slice                  → 完整度切片 (VIEW_DASHBOARD) — mock-complete
+/dashboard              → 儀表板 (VIEW_DASHBOARD) — mock-complete
+/approvals              → 審批列表 (VIEW_APPROVALS) — mock-complete
+/approvals/new          → 新增審批 (CREATE_APPROVAL) — stub
+/approvals/:id          → 審批詳情 (VIEW_APPROVALS) — stub
+/flags                  → 旗標列表 (VIEW_FLAGS) — mock-complete
+/flags/new              → 新增旗標 (MANAGE_FLAGS) — stub
+/flags/:id              → 旗標詳情 (VIEW_FLAGS) — stub
+/flags/:id/compare      → 旗標比較 (VIEW_FLAGS) — stub
+/events                 → 事件監控 (VIEW_EVENTS) — mock-complete
+/events/:id             → 事件詳情 (VIEW_EVENTS) — stub
+/settings               → 設定儀表板 (VIEW_SETTINGS) — stub
+/settings/dictionary    → 字典管理 (VIEW_SETTINGS) — stub
+/settings/webhooks      → Webhook 管理 (MANAGE_SETTINGS) — stub
+/settings/permissions   → 權限管理 (MANAGE_SETTINGS) — stub
+/audit                  → 稽核列表 (VIEW_AUDIT_TRAIL) — mock-complete
+/audit/:id              → 稽核詳情 (VIEW_AUDIT_TRAIL) — stub
+/unauthorized           → 未授權頁面 — mock-complete
 ```
 
 ## 權限列表

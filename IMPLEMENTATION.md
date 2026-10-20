@@ -569,20 +569,22 @@ pnpm e2e:debug
 
 ## 🚀 下一步開發建議
 
+Route-level mock vs stub inventory (including `/slice` as the honesty checkpoint) lives in [README.md](./README.md#route-status).
+
 ### Phase 1: 完善功能元件
 
-1. ✅ Approvals List
-2. ⏳ Approval Form
-3. ⏳ Approval Detail
-4. ✅ Flags List
-5. ⏳ Flag Form
-6. ⏳ Flag Detail
-7. ⏳ Flag Compare
-8. ✅ Events Monitor
-9. ⏳ Event Detail
-10. ⏳ Settings Dashboard
-11. ✅ Audit List
-12. ⏳ Audit Detail
+1. ✅ Approvals List (`/approvals`, mock-complete)
+2. ⏳ Approval Form (`/approvals/new`, stub)
+3. ⏳ Approval Detail (`/approvals/:id`, stub)
+4. ✅ Flags List (`/flags`, mock-complete)
+5. ⏳ Flag Form (`/flags/new`, stub)
+6. ⏳ Flag Detail (`/flags/:id`, stub)
+7. ⏳ Flag Compare (`/flags/:id/compare`, stub)
+8. ✅ Events Monitor (`/events`, mock-complete)
+9. ⏳ Event Detail (`/events/:id`, stub)
+10. ⏳ Settings Dashboard + dictionary / webhooks / permissions (stubs)
+11. ✅ Audit List (`/audit`, mock-complete)
+12. ⏳ Audit Detail (`/audit/:id`, stub)
 
 ### Phase 2: 後端整合
 
@@ -601,7 +603,7 @@ pnpm e2e:debug
 ### Phase 4: 生產準備
 
 1. 環境變數設定
-2. CI/CD 管道
+2. ✅ CI on push/PR (`pnpm install` → `pnpm test:ci` → `pnpm build`; lint not wired)
 3. Docker 容器化
 4. 監控與錯誤追蹤
 
@@ -722,4 +724,4 @@ pnpm exec prettier --write "src/**/*.{ts,html,css}"
 
 ## 📄 授權
 
-MIT License
+[MIT License](./LICENSE)
