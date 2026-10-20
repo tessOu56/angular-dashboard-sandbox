@@ -75,8 +75,7 @@ export class LoggerService {
     // Console output
     this.outputToConsole(logEntry);
 
-    // Send to external service in production
-    if (environment.production && level >= LogLevel.ERROR) {
+    if (environment.production && environment.logging.enableRemote && level >= LogLevel.ERROR) {
       this.sendToExternalService(logEntry);
     }
   }

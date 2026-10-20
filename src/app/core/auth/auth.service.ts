@@ -16,6 +16,10 @@ import {
 import { PermissionService } from './permission.service';
 import { MockBackendService } from '../mock/mock-backend.service';
 
+/** Documented mock SPA tokens — not a real JWT issuer. */
+export const MOCK_ACCESS_TOKEN = 'mock-jwt-token';
+export const MOCK_REFRESH_TOKEN = 'mock-refresh-token';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -69,25 +73,40 @@ export class AuthService {
 
   private initializeAuth(): void {
     const token = localStorage.getItem('auth_token');
-    const refreshToken = localStorage.getItem('refresh_token');
     const userStr = localStorage.getItem('user');
 
-    if (token && userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        this._authState.update((state) => ({
-          ...state,
-          isAuthenticated: true,
-          user,
-          token,
-          refreshToken,
-          permissions: user.permissions || [],
-        }));
-        this.permissionService.setPermissions(user.permissions || []);
-        this.currentUserSubject.next(user);
-      } catch (error) {
+    if (!token || !userStr) {
+      return;
+    }
+
+    try {
+      if (token !== MOCK_ACCESS_TOKEN) {
         this.clearAuth();
+        return;
       }
+
+      const stored = JSON.parse(userStr) as { username?: unknown };
+      if (typeof stored.username !== 'string' || !stored.username) {
+        this.clearAuth();
+        return;
+      }
+
+      // Rehydrate from the mock catalog. Never trust role/permissions in localStorage.
+      const user = this.mockBackend.getUserByUsername(stored.username);
+      if (!user) {
+        this.clearAuth();
+        return;
+      }
+
+      this.setAuthState({
+        user,
+        token: MOCK_ACCESS_TOKEN,
+        refreshToken: MOCK_REFRESH_TOKEN,
+        expiresIn: 3600,
+        permissions: user.permissions,
+      });
+    } catch {
+      this.clearAuth();
     }
   }
 
@@ -98,8 +117,8 @@ export class AuthService {
     if (mockUser) {
       const mockResponse: LoginResponse = {
         user: mockUser,
-        token: 'mock-jwt-token',
-        refreshToken: 'mock-refresh-token',
+        token: MOCK_ACCESS_TOKEN,
+        refreshToken: MOCK_REFRESH_TOKEN,
         expiresIn: 3600,
         permissions: mockUser.permissions,
       };

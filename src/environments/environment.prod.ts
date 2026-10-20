@@ -1,8 +1,8 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.company.com',
-  wsUrl: 'wss://api.company.com',
-  sseUrl: 'https://api.company.com/events',
+  apiUrl: '/api',
+  wsUrl: '',
+  sseUrl: 'mock',
   appName: 'Angular Sandbox',
   version: '1.0.0',
   features: {
@@ -16,7 +16,7 @@ export const environment = {
   logging: {
     level: 'warn',
     enableConsole: false,
-    enableRemote: true,
+    enableRemote: false,
   },
   pagination: {
     defaultPageSize: 20,

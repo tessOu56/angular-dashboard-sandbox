@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { TableComponent } from '../../../shared/ui/table/table.component';
@@ -262,6 +262,7 @@ import { Permission } from '../../../../shared/sdk';
 })
 export class FlagsListComponent implements OnInit {
   store = inject(FlagsStore);
+  private router = inject(Router);
   Permission = Permission;
 
   selectedStatus = '';
@@ -309,7 +310,9 @@ export class FlagsListComponent implements OnInit {
     this.store.fetchFlags();
   }
 
-  onRowClick(row: any): void {
-    window.location.href = `/flags/${row.id}`;
+  onRowClick(row: { id?: string }): void {
+    if (typeof row?.id === 'string' && row.id.length > 0) {
+      void this.router.navigate(['/flags', row.id]);
+    }
   }
 }

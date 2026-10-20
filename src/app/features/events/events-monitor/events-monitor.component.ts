@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { TableComponent } from '../../../shared/ui/table/table.component';
@@ -375,6 +375,7 @@ import { Permission, EventType, EventSeverity } from '../../../../shared/sdk';
 export class EventsMonitorComponent implements OnInit, OnDestroy {
   eventsSse = inject(EventsSseService);
   eventsStore = inject(EventsStore);
+  private router = inject(Router);
   Permission = Permission;
 
   selectedType = '';
@@ -403,9 +404,7 @@ export class EventsMonitorComponent implements OnInit, OnDestroy {
   }
 
   startStream(): void {
-    this.eventsSse.start('http://localhost:3000/api/events/stream', {
-      withCredentials: true,
-    });
+    this.eventsSse.start('mock');
   }
 
   toggleStream(): void {
@@ -471,7 +470,9 @@ export class EventsMonitorComponent implements OnInit, OnDestroy {
     window.URL.revokeObjectURL(url);
   }
 
-  onRowClick(row: any): void {
-    window.location.href = `/events/${row.id}`;
+  onRowClick(row: { id?: string }): void {
+    if (typeof row?.id === 'string' && row.id.length > 0) {
+      void this.router.navigate(['/events', row.id]);
+    }
   }
 }

@@ -40,7 +40,7 @@ Angular 20 **labelled sandbox** for B2B ops UI patterns: Signals, route/UI RBAC,
 
 ## 📋 環境要求
 
-- **Node.js**: 20.19+ 或 22.12+
+- **Node.js**: 22.12+ 或 24（Node 20 已於 2026-04-30 EOL；`package.json` `engines` 只允許受支援的 LTS）
 - **pnpm**: 9.0.0+
 - **瀏覽器**: 支援 ES2022 的現代瀏覽器
 
@@ -140,6 +140,8 @@ src/
 | admin      | admin    | Admin    | 所有權限（\*） |
 | manager    | manager  | Manager  | 管理與審批     |
 | employee   | employee | Operator | 基本操作       |
+
+These accounts exist only in the in-browser mock backend. Route guards and `*hasPerm` are **client-side UI demos**, not a server authorization boundary. Tokens are mock strings in `localStorage`.
 
 ## 🌟 核心功能
 

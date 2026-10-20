@@ -70,7 +70,7 @@ interface LoginForm {
         </form>
 
         <div class="demo-credentials">
-          <h4>Demo Credentials:</h4>
+          <h4>Mock accounts (in-browser only)</h4>
           <p>admin / admin · manager / manager · employee / employee</p>
         </div>
       </div>

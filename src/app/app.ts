@@ -17,13 +17,10 @@ export class App {
   private router = inject(Router);
 
   constructor() {
-    // Check authentication on app init
-    const user = this.authService.user();
-    if (!user) {
-      const storedUser = localStorage.getItem('user');
-      if (!storedUser) {
-        this.router.navigate(['/login']);
-      }
+    // AuthService rehydrates from the mock catalog. Do not treat a leftover
+    // localStorage `user` key as proof of a session.
+    if (!this.authService.isAuthenticated()) {
+      void this.router.navigate(['/login']);
     }
   }
 }

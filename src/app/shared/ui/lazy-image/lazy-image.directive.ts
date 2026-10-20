@@ -67,6 +67,17 @@ export class LazyImageDirective implements OnInit, OnDestroy {
       img.classList.add('lazy-error');
     };
 
+    if (!isSafeImageUrl(this.appLazyImage)) {
+      img.classList.remove('lazy-loading');
+      img.classList.add('lazy-error');
+      return;
+    }
+
     img.src = this.appLazyImage;
   }
+}
+
+function isSafeImageUrl(url: string): boolean {
+  const trimmed = url.trim().toLowerCase();
+  return !trimmed.startsWith('javascript:') && !trimmed.startsWith('vbscript:');
 }
