@@ -1,15 +1,12 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { StubPageComponent } from '../../../shared/ui/stub-page/stub-page.component';
 
 @Component({
   selector: 'app-flag-compare',
   standalone: true,
-  imports: [CommonModule],
+  imports: [StubPageComponent],
   template: `
-    <div class="flag-compare">
-      <h2>Flag Compare</h2>
-      <p>Component under development</p>
-    </div>
+    <app-stub-page title="Flag compare" parentLink="/flags" parentLabel="Back to flags" />
   `,
 })
 export class FlagCompareComponent {}

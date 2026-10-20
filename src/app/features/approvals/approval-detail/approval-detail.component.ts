@@ -1,15 +1,16 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { StubPageComponent } from '../../../shared/ui/stub-page/stub-page.component';
 
 @Component({
   selector: 'app-approval-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [StubPageComponent],
   template: `
-    <div class="approval-detail">
-      <h2>Approval Detail</h2>
-      <p>Component under development</p>
-    </div>
+    <app-stub-page
+      title="Approval detail"
+      parentLink="/approvals"
+      parentLabel="Back to approvals"
+    />
   `,
 })
 export class ApprovalDetailComponent {}

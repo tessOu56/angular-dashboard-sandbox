@@ -33,7 +33,7 @@ describe('chart-stats', () => {
 
   it('maps counts to bar data with fallback color', () => {
     const bars = toBarData({ alpha: 1 });
-    expect(bars[0].color).toBe('#6366f1');
+    expect(bars[0].color).toBe('#1f4a42');
     expect(bars[0].label).toBe('alpha');
   });
 

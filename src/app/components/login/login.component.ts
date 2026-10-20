@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,14 +9,26 @@ interface LoginForm {
   password: FormControl<string>;
 }
 
+interface DemoAccount {
+  username: string;
+  password: string;
+  role: string;
+  note: string;
+}
+
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="login-container">
-      <div class="login-card">
-        <h2>Angular Sandbox Login</h2>
+    <main id="main-content" class="auth-screen" tabindex="-1">
+      <div class="auth-card">
+        <p class="page-kicker">Ops sandbox</p>
+        <h1>Sign in</h1>
+        <p class="lede">
+          Mock accounts only. Credentials never leave this browser and there is no live API.
+        </p>
+
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
           <div class="form-group">
             <label for="username">Username</label>
@@ -26,15 +38,11 @@ interface LoginForm {
               type="text"
               formControlName="username"
               autocomplete="username"
-              placeholder="Enter username"
-              [class.error]="
-                loginForm.get('username')?.invalid && loginForm.get('username')?.touched
-              "
+              [attr.aria-invalid]="showError('username')"
+              [attr.aria-describedby]="showError('username') ? 'username-error' : null"
+              [class.error]="showError('username')"
             />
-            <div
-              *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
-              class="error-message"
-            >
+            <div *ngIf="showError('username')" id="username-error" class="error-message">
               Username is required
             </div>
           </div>
@@ -47,140 +55,114 @@ interface LoginForm {
               type="password"
               formControlName="password"
               autocomplete="current-password"
-              placeholder="Enter password"
-              [class.error]="
-                loginForm.get('password')?.invalid && loginForm.get('password')?.touched
-              "
+              [attr.aria-invalid]="showError('password')"
+              [attr.aria-describedby]="showError('password') ? 'password-error' : null"
+              [class.error]="showError('password')"
             />
-            <div
-              *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-              class="error-message"
-            >
+            <div *ngIf="showError('password')" id="password-error" class="error-message">
               Password is required
             </div>
           </div>
 
-          <div *ngIf="errorMessage()" class="error-message">
+          <div *ngIf="errorMessage()" id="login-error" class="error-message" role="alert">
             {{ errorMessage() }}
           </div>
 
-          <button type="submit" [disabled]="loginForm.invalid || loading()" class="login-button">
-            {{ loading() ? 'Logging in...' : 'Login' }}
+          <button
+            type="submit"
+            class="btn btn-primary login-submit"
+            [disabled]="loginForm.invalid || loading()"
+            [attr.aria-busy]="loading()"
+          >
+            {{ loading() ? 'Signing in…' : 'Sign in' }}
           </button>
         </form>
 
-        <div class="demo-credentials">
-          <h4>Mock accounts (in-browser only)</h4>
-          <p>admin / admin · manager / manager · employee / employee</p>
-        </div>
+        <section class="demo-accounts" aria-labelledby="demo-heading">
+          <h2 id="demo-heading">Demo accounts (in-browser only)</h2>
+          <ul>
+            <li *ngFor="let account of demoAccounts">
+              <button type="button" (click)="fillDemo(account)">
+                <span class="demo-id">{{ account.username }}</span>
+                <span class="demo-meta">{{ account.role }} · {{ account.note }}</span>
+              </button>
+            </li>
+          </ul>
+        </section>
       </div>
-    </div>
+    </main>
   `,
   styles: [
     `
-      .login-container {
+      .login-submit {
+        width: 100%;
+        min-height: 2.5rem;
+        margin-top: var(--space-2);
+      }
+
+      .demo-accounts {
+        margin-top: var(--space-8);
+        padding-top: var(--space-5);
+        border-top: 1px solid var(--color-border);
+      }
+
+      .demo-accounts h2 {
+        font-size: var(--text-sm);
+        margin-bottom: var(--space-3);
+        color: var(--color-ink-muted);
+      }
+
+      .demo-accounts ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: var(--space-2);
+      }
+
+      .demo-accounts button {
+        width: 100%;
         display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 20px;
-      }
-
-      .login-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 10px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        width: 100%;
-        max-width: 400px;
-      }
-
-      h2 {
-        text-align: center;
-        margin-bottom: 2rem;
-        color: #333;
-      }
-
-      .form-group {
-        margin-bottom: 1.5rem;
-      }
-
-      label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-        color: #555;
-      }
-
-      input {
-        width: 100%;
-        padding: 0.75rem;
-        border: 2px solid #e1e5e9;
-        border-radius: 5px;
-        font-size: 1rem;
-        transition: border-color 0.3s;
-      }
-
-      input:focus {
-        outline: none;
-        border-color: #667eea;
-      }
-
-      input.error {
-        border-color: #e74c3c;
-      }
-
-      .error-message {
-        color: #e74c3c;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
-      }
-
-      .login-button {
-        width: 100%;
-        padding: 0.75rem;
-        background: #667eea;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        font-size: 1rem;
-        font-weight: 500;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.1rem;
+        padding: 0.55rem 0.7rem;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        background: var(--color-bg);
+        color: inherit;
         cursor: pointer;
-        transition: background-color 0.3s;
+        text-align: left;
       }
 
-      .login-button:hover:not(:disabled) {
-        background: #5a6fd8;
+      .demo-accounts button:hover {
+        background: var(--color-accent-soft);
+        border-color: var(--color-accent);
       }
 
-      .login-button:disabled {
-        background: #ccc;
-        cursor: not-allowed;
+      .demo-id {
+        font-weight: 600;
+        font-family: var(--font-mono);
+        font-size: var(--text-sm);
       }
 
-      .demo-credentials {
-        margin-top: 2rem;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 5px;
-        text-align: center;
-      }
-
-      .demo-credentials h4 {
-        margin: 0 0 0.5rem 0;
-        color: #666;
-      }
-
-      .demo-credentials p {
-        margin: 0.25rem 0;
-        color: #666;
-        font-size: 0.875rem;
+      .demo-meta {
+        color: var(--color-ink-muted);
+        font-size: var(--text-xs);
       }
     `,
   ],
 })
 export class LoginComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
+  readonly demoAccounts: DemoAccount[] = [
+    { username: 'admin', password: 'admin', role: 'Admin', note: 'all screens' },
+    { username: 'manager', password: 'manager', role: 'Manager', note: 'approvals and flags' },
+    { username: 'employee', password: 'employee', role: 'Operator', note: 'approvals and events' },
+  ];
+
   loginForm = new FormGroup<LoginForm>({
     username: new FormControl('', {
       validators: [Validators.required],
@@ -195,29 +177,40 @@ export class LoginComponent {
   loading = signal(false);
   errorMessage = signal('');
 
-  constructor(private authService: AuthService, private router: Router) {}
+  showError(controlName: keyof LoginForm): boolean {
+    const control = this.loginForm.get(controlName);
+    return !!(control?.invalid && control.touched);
+  }
+
+  fillDemo(account: DemoAccount): void {
+    this.loginForm.setValue({ username: account.username, password: account.password });
+    this.errorMessage.set('');
+  }
 
   onSubmit(): void {
-    if (this.loginForm.valid) {
-      this.loading.set(true);
-      this.errorMessage.set('');
-
-      const { username, password } = this.loginForm.value;
-
-      this.authService.login({ username: username!, password: password! }).subscribe({
-        next: (response) => {
-          this.loading.set(false);
-          if (response) {
-            this.router.navigate(['/slice']);
-          } else {
-            this.errorMessage.set('Invalid username or password');
-          }
-        },
-        error: () => {
-          this.loading.set(false);
-          this.errorMessage.set('Login failed. Please try again.');
-        },
-      });
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
     }
+
+    this.loading.set(true);
+    this.errorMessage.set('');
+
+    const { username, password } = this.loginForm.getRawValue();
+
+    this.authService.login({ username, password }).subscribe({
+      next: (response) => {
+        this.loading.set(false);
+        if (response) {
+          this.router.navigate(['/slice']);
+        } else {
+          this.errorMessage.set('Invalid username or password');
+        }
+      },
+      error: () => {
+        this.loading.set(false);
+        this.errorMessage.set('Invalid username or password');
+      },
+    });
   }
 }

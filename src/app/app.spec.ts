@@ -17,10 +17,10 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render main content shell', () => {
+  it('should render skip link', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('#main-content')).toBeTruthy();
+    expect(compiled.querySelector('app-skip-link')).toBeTruthy();
   });
 });

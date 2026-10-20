@@ -9,7 +9,7 @@ test.describe('T-2026-224 completeness slice', () => {
 
     await page.waitForURL('**/slice');
     await expect(page.getByTestId('completeness-slice')).toBeVisible();
-    await expect(page.locator('h1')).toContainText('SSE');
+    await expect(page.locator('h1')).toContainText('Operations');
     await expect(page.getByTestId('slice-approvals')).toBeVisible();
     await expect(page.getByTestId('slice-audit')).toBeVisible();
     await expect(page.getByTestId('slice-sse')).toBeVisible();

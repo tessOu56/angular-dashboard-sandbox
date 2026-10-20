@@ -1,26 +1,14 @@
-<div class="slice-page" data-testid="completeness-slice">
-  <header class="slice-header">
+<div class="page slice-page" data-testid="completeness-slice">
+  <header class="page-header">
     <div>
-      <p class="eyebrow">T-2026-224 · Angular completeness slice</p>
-      <h1>Login → approval / audit → SSE + charts</h1>
-      <p class="lede">
-        Canonical Angular B2B sandbox. Not an event-cms stand-in. Capacity stays far below the React
-        event stack.
+      <p class="page-kicker">Angular 20 · B2B ops sandbox</p>
+      <h1 class="page-title">Operations overview</h1>
+      <p class="page-lede">
+        Approvals, recent audit, a mock SSE feed, and charts on one page. Data is generated in
+        the browser. This is not a hosted or regulated admin console.
       </p>
     </div>
-    <div class="header-meta">
-      <span class="user-chip" data-testid="slice-user">{{ userLabel() }}</span>
-      <button type="button" class="btn" (click)="logout()">Log out</button>
-    </div>
   </header>
-
-  <nav class="slice-nav" aria-label="Sandbox modules">
-    <a routerLink="/slice" routerLinkActive="active">Slice</a>
-    <a routerLink="/approvals">Approvals</a>
-    <a routerLink="/audit">Audit</a>
-    <a routerLink="/events">Events</a>
-    <a routerLink="/dashboard">Dashboard</a>
-  </nav>
 
   <section class="slice-grid">
     <article class="panel" *hasPerm="[Permission.VIEW_APPROVALS]" data-testid="slice-approvals">
@@ -28,7 +16,7 @@
         <h2>Open approvals</h2>
         <a routerLink="/approvals">Full list</a>
       </div>
-      <p class="count">{{ openApprovals().length }} pending or in review</p>
+      <p class="panel-meta count">{{ openApprovals().length }} pending or in review</p>
       <app-table
         [data]="openApprovals()"
         [columns]="approvalColumns"
@@ -48,18 +36,19 @@
     </article>
   </section>
 
-  <section class="panel" data-testid="slice-sse" *hasPerm="[Permission.VIEW_EVENTS]">
+  <section class="panel sse-panel" data-testid="slice-sse" *hasPerm="[Permission.VIEW_EVENTS]">
     <div class="panel-head">
       <h2>Live SSE</h2>
       <span
-        class="sse-status"
+        class="chip"
         data-testid="sse-status"
-        [class.connected]="eventsSse.isConnected()"
+        [class.is-ok]="eventsSse.isConnected()"
+        [class.is-bad]="!eventsSse.isConnected()"
       >
         {{ eventsSse.isConnected() ? 'Connected (mock stream)' : 'Disconnected' }}
       </span>
     </div>
-    <p class="count">{{ eventsSse.eventCount() }} events in ring buffer</p>
+    <p class="panel-meta count">{{ eventsSse.eventCount() }} events in ring buffer</p>
     <app-table [data]="sseRows()" [columns]="eventColumns" emptyMessage="Waiting for SSE events"></app-table>
   </section>
 

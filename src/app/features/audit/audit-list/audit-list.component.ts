@@ -5,288 +5,115 @@ import { FormsModule } from '@angular/forms';
 
 import { TableComponent } from '../../../shared/ui/table/table.component';
 import { HasPermDirective } from '../../../shared/directives';
-import { sdk, Permission, AuditLog, AuditAction, AuditResource } from '../../../../shared/sdk';
+import { sdk, Permission, AuditLog } from '../../../../shared/sdk';
 
 @Component({
   selector: 'app-audit-list',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, TableComponent, HasPermDirective],
   template: `
-    <div class="audit-container">
-      <header class="audit-header">
+    <div class="page">
+      <header class="page-header">
         <div>
-          <h1>稽核軌跡</h1>
-          <p class="subtitle">查看系統所有操作記錄</p>
+          <h1 class="page-title">Audit trail</h1>
+          <p class="page-lede">Mock operation history for the accounts in this sandbox.</p>
         </div>
-        <button
-          *hasPerm="[Permission.EXPORT_AUDIT_LOGS]"
-          class="btn btn-primary"
-          (click)="exportLogs()"
-          [disabled]="loading()"
-        >
-          📥 匯出記錄
-        </button>
+        <div class="page-actions">
+          <button
+            *hasPerm="[Permission.EXPORT_AUDIT_LOGS]"
+            type="button"
+            class="btn btn-primary"
+            (click)="exportLogs()"
+            [disabled]="loading()"
+          >
+            Export CSV
+          </button>
+        </div>
       </header>
 
-      <!-- Filters -->
-      <div class="filters-section">
-        <div class="filter-group">
-          <label>使用者</label>
+      <div class="toolbar">
+        <div class="filter-field">
+          <label for="audit-user">User</label>
           <input
+            id="audit-user"
             type="text"
             [(ngModel)]="filters.userId"
             (input)="applyFilters()"
-            placeholder="輸入使用者 ID"
-            class="filter-input"
+            placeholder="User id"
           />
         </div>
-
-        <div class="filter-group">
-          <label>操作</label>
-          <select [(ngModel)]="filters.action" (change)="applyFilters()" class="filter-select">
-            <option value="">全部</option>
-            <option value="create">建立</option>
-            <option value="read">讀取</option>
-            <option value="update">更新</option>
-            <option value="delete">刪除</option>
-            <option value="login">登入</option>
-            <option value="logout">登出</option>
-            <option value="approve">批准</option>
-            <option value="reject">拒絕</option>
-            <option value="publish">發佈</option>
-            <option value="archive">封存</option>
+        <div class="filter-field">
+          <label for="audit-action">Action</label>
+          <select id="audit-action" [(ngModel)]="filters.action" (change)="applyFilters()">
+            <option value="">All</option>
+            <option value="create">Create</option>
+            <option value="read">Read</option>
+            <option value="update">Update</option>
+            <option value="delete">Delete</option>
+            <option value="login">Login</option>
+            <option value="logout">Logout</option>
+            <option value="approve">Approve</option>
+            <option value="reject">Reject</option>
+            <option value="publish">Publish</option>
+            <option value="archive">Archive</option>
           </select>
         </div>
-
-        <div class="filter-group">
-          <label>資源類型</label>
-          <select
-            [(ngModel)]="filters.resourceType"
-            (change)="applyFilters()"
-            class="filter-select"
-          >
-            <option value="">全部</option>
-            <option value="user">使用者</option>
-            <option value="approval_request">審批請求</option>
-            <option value="feature_flag">功能旗標</option>
-            <option value="setting">設定</option>
+        <div class="filter-field">
+          <label for="audit-resource">Resource</label>
+          <select id="audit-resource" [(ngModel)]="filters.resourceType" (change)="applyFilters()">
+            <option value="">All</option>
+            <option value="user">User</option>
+            <option value="approval_request">Approval</option>
+            <option value="feature_flag">Flag</option>
+            <option value="setting">Setting</option>
             <option value="webhook">Webhook</option>
           </select>
         </div>
-
-        <div class="filter-group">
-          <label>資源 ID</label>
-          <input
-            type="text"
-            [(ngModel)]="filters.resourceId"
-            (input)="applyFilters()"
-            placeholder="輸入資源 ID"
-            class="filter-input"
-          />
+        <div class="filter-field">
+          <label for="audit-start">Start</label>
+          <input id="audit-start" type="date" [(ngModel)]="startDate" (change)="applyFilters()" />
         </div>
-
-        <div class="filter-group">
-          <label>開始日期</label>
-          <input
-            type="date"
-            [(ngModel)]="startDate"
-            (change)="applyFilters()"
-            class="filter-input"
-          />
+        <div class="filter-field">
+          <label for="audit-end">End</label>
+          <input id="audit-end" type="date" [(ngModel)]="endDate" (change)="applyFilters()" />
         </div>
-
-        <div class="filter-group">
-          <label>結束日期</label>
-          <input type="date" [(ngModel)]="endDate" (change)="applyFilters()" class="filter-input" />
-        </div>
-
-        <button class="btn btn-outline" (click)="clearFilters()">清除篩選</button>
-        <button class="btn btn-outline" (click)="refresh()">重新整理</button>
+        <button type="button" class="btn" (click)="clearFilters()">Clear</button>
+        <button type="button" class="btn" (click)="refresh()">Refresh</button>
       </div>
 
-      <!-- Stats -->
-      <div class="stats-grid">
+      <div class="stat-grid">
         <div class="stat-card">
-          <div class="stat-icon">📊</div>
-          <div class="stat-content">
-            <h3>總記錄數</h3>
-            <div class="stat-value">{{ total() }}</div>
-          </div>
+          <h3>Rows</h3>
+          <div class="stat-value">{{ total() }}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">👤</div>
-          <div class="stat-content">
-            <h3>活躍使用者</h3>
-            <div class="stat-value">{{ uniqueUsers() }}</div>
-          </div>
+          <h3>Users</h3>
+          <div class="stat-value">{{ uniqueUsers() }}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">⚡</div>
-          <div class="stat-content">
-            <h3>今日操作</h3>
-            <div class="stat-value">{{ todayActions() }}</div>
-          </div>
+          <h3>Today</h3>
+          <div class="stat-value">{{ todayActions() }}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">📝</div>
-          <div class="stat-content">
-            <h3>操作類型</h3>
-            <div class="stat-value">{{ actionTypes() }}</div>
-          </div>
+          <h3>Action types</h3>
+          <div class="stat-value">{{ actionTypes() }}</div>
         </div>
       </div>
 
-      <!-- Table -->
-      <div class="table-section">
+      <p *ngIf="error()" class="error-state" role="alert">{{ error() }}</p>
+
+      <div class="surface">
         <app-table
           [data]="auditLogs()"
           [columns]="columns"
           [loading]="loading()"
+          [clickable]="true"
+          emptyMessage="No audit rows match these filters"
           (rowClick)="onRowClick($event)"
         ></app-table>
       </div>
     </div>
   `,
-  styles: [
-    `
-      .audit-container {
-        padding: 2rem;
-        max-width: 1600px;
-        margin: 0 auto;
-      }
-
-      .audit-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-      }
-
-      .audit-header h1 {
-        margin: 0 0 0.5rem 0;
-        color: #111827;
-      }
-
-      .subtitle {
-        margin: 0;
-        color: #6b7280;
-        font-size: 0.875rem;
-      }
-
-      .filters-section {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        margin-bottom: 2rem;
-        padding: 1.5rem;
-        background: white;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-
-      .filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      .filter-group label {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: #374151;
-      }
-
-      .filter-select,
-      .filter-input {
-        padding: 0.5rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        font-size: 0.875rem;
-        min-width: 150px;
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1rem;
-        margin-bottom: 2rem;
-      }
-
-      .stat-card {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1.5rem;
-        background: white;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        border-left: 4px solid #3b82f6;
-      }
-
-      .stat-icon {
-        font-size: 2rem;
-      }
-
-      .stat-content h3 {
-        margin: 0 0 0.5rem 0;
-        font-size: 0.875rem;
-        color: #6b7280;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-
-      .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #111827;
-      }
-
-      .table-section {
-        background: white;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.5rem 1rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        background: white;
-        color: #374151;
-        font-size: 0.875rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-      }
-
-      .btn:hover:not(:disabled) {
-        background: #f9fafb;
-      }
-
-      .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .btn-primary {
-        background: #3b82f6;
-        color: white;
-        border-color: #3b82f6;
-      }
-
-      .btn-primary:hover:not(:disabled) {
-        background: #2563eb;
-      }
-
-      .btn-outline {
-        background: transparent;
-      }
-    `,
-  ],
 })
 export class AuditListComponent implements OnInit {
   private router = inject(Router);
@@ -294,12 +121,13 @@ export class AuditListComponent implements OnInit {
 
   auditLogs = signal<AuditLog[]>([]);
   loading = signal(false);
+  error = signal('');
   total = signal(0);
   uniqueUsers = signal(0);
   todayActions = signal(0);
   actionTypes = signal(0);
 
-  filters: any = {
+  filters: { userId: string; action: string; resourceType: string; resourceId: string } = {
     userId: '',
     action: '',
     resourceType: '',
@@ -310,12 +138,12 @@ export class AuditListComponent implements OnInit {
   endDate = '';
 
   columns = [
-    { key: 'timestamp', header: '時間', sortable: true },
-    { key: 'username', header: '使用者', sortable: true },
-    { key: 'action', header: '操作', sortable: true },
-    { key: 'resourceType', header: '資源類型', sortable: true },
-    { key: 'resourceId', header: '資源 ID', sortable: true },
-    { key: 'ipAddress', header: 'IP 地址', sortable: false },
+    { key: 'timestamp', header: 'Time', sortable: true },
+    { key: 'username', header: 'User', sortable: true },
+    { key: 'action', header: 'Action', sortable: true },
+    { key: 'resourceType', header: 'Resource', sortable: true },
+    { key: 'resourceId', header: 'Resource id', sortable: true },
+    { key: 'ipAddress', header: 'IP', sortable: false },
   ];
 
   async ngOnInit(): Promise<void> {
@@ -324,13 +152,14 @@ export class AuditListComponent implements OnInit {
 
   async fetchAuditLogs(): Promise<void> {
     this.loading.set(true);
+    this.error.set('');
 
     try {
-      const params: any = { ...this.filters };
+      const params: Record<string, unknown> = { ...this.filters };
 
       if (this.startDate && this.endDate) {
-        params.startDate = new Date(this.startDate);
-        params.endDate = new Date(this.endDate);
+        params['startDate'] = new Date(this.startDate);
+        params['endDate'] = new Date(this.endDate);
       }
 
       const response = await sdk.audit.list(params).toPromise();
@@ -338,59 +167,44 @@ export class AuditListComponent implements OnInit {
       if (response) {
         this.auditLogs.set(response.data);
         this.total.set(response.pagination.total);
-
-        // Calculate stats
         this.calculateStats(response.data);
       }
-    } catch (error) {
-      console.error('Failed to fetch audit logs:', error);
+    } catch {
+      this.error.set('Could not load the mock audit trail.');
     } finally {
       this.loading.set(false);
     }
   }
 
   private calculateStats(logs: AuditLog[]): void {
-    // Unique users
     const users = new Set(logs.map((log) => log.userId));
     this.uniqueUsers.set(users.size);
 
-    // Today's actions
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayLogs = logs.filter((log) => new Date(log.timestamp) >= today);
-    this.todayActions.set(todayLogs.length);
-
-    // Action types
-    const actions = new Set(logs.map((log) => log.action));
-    this.actionTypes.set(actions.size);
+    this.todayActions.set(logs.filter((log) => new Date(log.timestamp) >= today).length);
+    this.actionTypes.set(new Set(logs.map((log) => log.action)).size);
   }
 
   applyFilters(): void {
-    this.fetchAuditLogs();
+    void this.fetchAuditLogs();
   }
 
   clearFilters(): void {
-    this.filters = {
-      userId: '',
-      action: '',
-      resourceType: '',
-      resourceId: '',
-    };
+    this.filters = { userId: '', action: '', resourceType: '', resourceId: '' };
     this.startDate = '';
     this.endDate = '';
-    this.fetchAuditLogs();
+    void this.fetchAuditLogs();
   }
 
   refresh(): void {
-    this.fetchAuditLogs();
+    void this.fetchAuditLogs();
   }
 
   async exportLogs(): Promise<void> {
     this.loading.set(true);
-
     try {
       const blob = await sdk.audit.export(this.filters).toPromise();
-
       if (blob) {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -399,8 +213,8 @@ export class AuditListComponent implements OnInit {
         link.click();
         window.URL.revokeObjectURL(url);
       }
-    } catch (error) {
-      console.error('Failed to export audit logs:', error);
+    } catch {
+      this.error.set('Could not export the mock audit trail.');
     } finally {
       this.loading.set(false);
     }

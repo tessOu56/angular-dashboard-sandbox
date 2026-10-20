@@ -25,7 +25,7 @@ test.describe('Approval System', () => {
     await page.goto('/approvals');
 
     // Check page title
-    await expect(page.locator('h1')).toContainText('審批中心');
+    await expect(page.locator('h1')).toContainText('Approvals');
 
     // Check table is visible
     await expect(page.locator('app-table')).toBeVisible();
