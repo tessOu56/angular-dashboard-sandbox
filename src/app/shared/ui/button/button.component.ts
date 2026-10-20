@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 export type ButtonVariant =
   | 'primary'
@@ -15,18 +15,20 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
 @Component({
   selector: 'app-button',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <button
       [class]="buttonClasses()"
       [disabled]="disabled() || loading()"
       (click)="onClick()"
       [type]="type"
-    >
-      <span *ngIf="loading()" class="spinner"></span>
+      >
+      @if (loading()) {
+        <span class="spinner"></span>
+      }
       <ng-content></ng-content>
     </button>
-  `,
+    `,
   styles: [
     `
       button {

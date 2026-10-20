@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 
 import { TableComponent } from '../../shared/ui/table/table.component';
@@ -14,7 +14,7 @@ import { Permission } from '../../../shared/sdk';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, TableComponent, HasPermDirective],
+  imports: [RouterModule, TableComponent, HasPermDirective],
   template: `
     <div class="page">
       <header class="page-header">

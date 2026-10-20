@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
@@ -11,7 +11,7 @@ import { Permission } from '../../../../shared/sdk';
 @Component({
   selector: 'app-approvals-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TableComponent, HasPermDirective],
+  imports: [RouterModule, FormsModule, TableComponent, HasPermDirective],
   template: `
     <div class="page">
       <header class="page-header">
@@ -25,7 +25,7 @@ import { Permission } from '../../../../shared/sdk';
           </a>
         </div>
       </header>
-
+    
       <div class="toolbar">
         <div class="filter-field">
           <label for="approval-status">Status</label>
@@ -63,7 +63,7 @@ import { Permission } from '../../../../shared/sdk';
         <button type="button" class="btn" (click)="clearFilters()">Clear</button>
         <button type="button" class="btn" (click)="store.refresh()">Refresh</button>
       </div>
-
+    
       <div class="stat-grid">
         <div class="stat-card">
           <h3>Pending</h3>
@@ -82,9 +82,11 @@ import { Permission } from '../../../../shared/sdk';
           <div class="stat-value">{{ store.rejectedApprovals().length }}</div>
         </div>
       </div>
-
-      <p *ngIf="store.error()" class="error-state" role="alert">{{ store.error() }}</p>
-
+    
+      @if (store.error()) {
+        <p class="error-state" role="alert">{{ store.error() }}</p>
+      }
+    
       <div class="surface">
         <app-table
           [data]="store.filteredApprovals()"
@@ -96,7 +98,7 @@ import { Permission } from '../../../../shared/sdk';
         ></app-table>
       </div>
     </div>
-  `,
+    `,
 })
 export class ApprovalsListComponent implements OnInit {
   private router = inject(Router);

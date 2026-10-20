@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
@@ -11,7 +11,7 @@ import { Permission } from '../../../../shared/sdk';
 @Component({
   selector: 'app-flags-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TableComponent, HasPermDirective],
+  imports: [RouterModule, FormsModule, TableComponent, HasPermDirective],
   template: `
     <div class="page">
       <header class="page-header">

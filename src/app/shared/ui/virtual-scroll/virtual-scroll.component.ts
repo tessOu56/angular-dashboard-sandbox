@@ -25,23 +25,24 @@ import { CommonModule } from '@angular/common';
     <div class="virtual-scroll-container" #container (scroll)="onScroll($event)">
       <div class="virtual-scroll-spacer" [style.height.px]="totalHeight()"></div>
       <div class="virtual-scroll-content" [style.transform]="contentTransform()">
-        <div
-          *ngFor="let item of visibleItems(); trackBy: trackByFn"
-          class="virtual-scroll-item"
-          [style.height.px]="itemHeight"
-        >
-          <ng-container *ngIf="itemTemplate">
-            <ng-container
-              *ngTemplateOutlet="itemTemplate; context: { $implicit: item, index: item.__index }"
-            ></ng-container>
-          </ng-container>
-          <ng-container *ngIf="!itemTemplate">
-            {{ item }}
-          </ng-container>
-        </div>
+        @for (item of visibleItems(); track trackByFn($index, item)) {
+          <div
+            class="virtual-scroll-item"
+            [style.height.px]="itemHeight"
+            >
+            @if (itemTemplate) {
+              <ng-container
+                *ngTemplateOutlet="itemTemplate; context: { $implicit: item, index: item.__index }"
+              ></ng-container>
+            }
+            @if (!itemTemplate) {
+              {{ item }}
+            }
+          </div>
+        }
       </div>
     </div>
-  `,
+    `,
   styles: [
     `
       .virtual-scroll-container {

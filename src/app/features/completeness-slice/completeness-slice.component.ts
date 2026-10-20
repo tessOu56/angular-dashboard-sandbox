@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnDestroy, OnInit, computed, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { TableComponent } from '../../shared/ui/table/table.component';
@@ -13,7 +13,7 @@ import { severityBars, throughputSeries, typeBars } from './chart-stats';
 @Component({
   selector: 'app-completeness-slice',
   standalone: true,
-  imports: [CommonModule, RouterModule, TableComponent, HasPermDirective, SliceChartsComponent],
+  imports: [RouterModule, TableComponent, HasPermDirective, SliceChartsComponent],
   templateUrl: './completeness-slice.component.html',
   styleUrl: './completeness-slice.component.css',
 })

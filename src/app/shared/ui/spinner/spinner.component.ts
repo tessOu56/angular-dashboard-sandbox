@@ -1,16 +1,18 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-spinner',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="spinner-container" [class]="'size-' + size">
       <div class="spinner" [class]="variant"></div>
-      <p *ngIf="message" class="spinner-message">{{ message }}</p>
+      @if (message) {
+        <p class="spinner-message">{{ message }}</p>
+      }
     </div>
-  `,
+    `,
   styles: [
     `
       .spinner-container {

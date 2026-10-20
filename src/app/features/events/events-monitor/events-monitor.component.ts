@@ -24,24 +24,24 @@ import { EventsSseService } from '../../../core/events/events-sse.service';
             [class.btn-success]="!eventsSse.isConnected()"
             [class.btn-danger]="eventsSse.isConnected()"
             (click)="toggleStream()"
-          >
+            >
             {{ eventsSse.isConnected() ? 'Stop stream' : 'Start stream' }}
           </button>
           <button type="button" class="btn" (click)="eventsSse.clearEvents()">Clear</button>
           <button type="button" class="btn" (click)="exportEvents()">Export CSV</button>
         </div>
       </header>
-
+    
       <div class="banner" [class.is-ok]="eventsSse.isConnected()" [class.is-bad]="!eventsSse.isConnected()">
         <span>{{ eventsSse.isConnected() ? 'Connected to mock stream' : 'Disconnected' }}</span>
         <span>
           {{ eventsSse.eventCount() }} events
-          <ng-container *ngIf="eventsSse.lastEventTime()">
+          @if (eventsSse.lastEventTime()) {
             · last {{ eventsSse.lastEventTime() | date : 'short' }}
-          </ng-container>
+          }
         </span>
       </div>
-
+    
       <div class="toolbar">
         <div class="filter-field">
           <label for="event-type">Type</label>
@@ -72,9 +72,11 @@ import { EventsSseService } from '../../../core/events/events-sse.service';
           <label for="event-source">Source</label>
           <select id="event-source" [(ngModel)]="selectedSource" (ngModelChange)="syncFilters()">
             <option value="">All</option>
-            <option *ngFor="let source of eventsSse.eventSources()" [value]="source">
-              {{ source }}
-            </option>
+            @for (source of eventsSse.eventSources(); track source) {
+              <option [value]="source">
+                {{ source }}
+              </option>
+            }
           </select>
         </div>
         <div class="filter-field">
@@ -85,11 +87,11 @@ import { EventsSseService } from '../../../core/events/events-sse.service';
             [(ngModel)]="searchQuery"
             (ngModelChange)="syncFilters()"
             placeholder="Type, source, or user"
-          />
+            />
         </div>
         <button type="button" class="btn" (click)="clearFilters()">Clear</button>
       </div>
-
+    
       <div class="stat-grid">
         <div class="stat-card">
           <h3>Total</h3>
@@ -108,7 +110,7 @@ import { EventsSseService } from '../../../core/events/events-sse.service';
           <div class="stat-value">{{ eventsSse.eventTypes().length }}</div>
         </div>
       </div>
-
+    
       <div class="surface">
         <app-table
           [data]="filteredEvents()"
@@ -119,7 +121,7 @@ import { EventsSseService } from '../../../core/events/events-sse.service';
         ></app-table>
       </div>
     </div>
-  `,
+    `,
 })
 export class EventsMonitorComponent implements OnInit, OnDestroy {
   private router = inject(Router);

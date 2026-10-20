@@ -8,146 +8,186 @@ import { TableColumn, PaginatedResponse } from '../../../../shared/sdk';
   imports: [CommonModule],
   template: `
     <div class="table-container">
-      <div class="table-header" *ngIf="showHeader()">
-        <div class="table-title">
-          <h3>{{ _title() }}</h3>
-          <span class="table-subtitle" *ngIf="_subtitle()">{{ _subtitle() }}</span>
+      @if (showHeader()) {
+        <div class="table-header">
+          <div class="table-title">
+            <h3>{{ _title() }}</h3>
+            @if (_subtitle()) {
+              <span class="table-subtitle">{{ _subtitle() }}</span>
+            }
+          </div>
         </div>
-      </div>
-
-      <div class="loading-state" *ngIf="_loading()" role="status">Loading…</div>
-
-      <div class="table-wrapper" *ngIf="!_loading() && _data().length > 0">
-        <table class="table">
-          <thead>
-            <tr>
-              <th *ngIf="_selectable()" class="select-column">
-                <input
-                  type="checkbox"
-                  [checked]="allSelected()"
-                  [indeterminate]="someSelected()"
-                  (change)="toggleSelectAll()"
-                  aria-label="Select all rows"
-                />
-              </th>
-              <th *ngFor="let column of _columns()" [class]="getColumnClasses(column)">
-                <button
-                  *ngIf="column.sortable; else staticHeader"
-                  type="button"
-                  class="sort-btn"
-                  (click)="onSort(column)"
-                >
-                  <span>{{ column.header }}</span>
-                  <span class="sort-indicators" aria-hidden="true">
-                    <span [class.active]="isSortActive(column, 'asc')">↑</span>
-                    <span [class.active]="isSortActive(column, 'desc')">↓</span>
-                  </span>
-                </button>
-                <ng-template #staticHeader>
-                  <span>{{ column.header }}</span>
-                </ng-template>
-              </th>
-              <th *ngIf="_showActions()" class="actions-column">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              *ngFor="let item of _data(); trackBy: trackByFn"
-              [class.selected]="isSelected(item)"
-              [class.clickable]="_clickable()"
-              [attr.tabindex]="_clickable() ? 0 : null"
-              (click)="onRowClick(item)"
-              (keydown.enter)="onRowActivate($event, item)"
-              (keydown.space)="onRowActivate($event, item)"
-            >
-              <td *ngIf="_selectable()" class="select-column">
-                <input
-                  type="checkbox"
-                  [checked]="isSelected(item)"
-                  (change)="toggleSelect(item)"
-                  (click)="$event.stopPropagation()"
-                  [attr.aria-label]="'Select ' + rowLabel(item)"
-                />
-              </td>
-              <td *ngFor="let column of _columns()" [class]="getColumnClasses(column)">
-                <ng-container [ngSwitch]="column.key">
-                  <span
-                    *ngSwitchCase="'status'"
-                    class="badge"
-                    [ngClass]="getStatusClass(getItemValue(item, column.key))"
+      }
+    
+      @if (_loading()) {
+        <div class="loading-state" role="status">Loading…</div>
+      }
+    
+      @if (!_loading() && _data().length > 0) {
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                @if (_selectable()) {
+                  <th class="select-column">
+                    <input
+                      type="checkbox"
+                      [checked]="allSelected()"
+                      [indeterminate]="someSelected()"
+                      (change)="toggleSelectAll()"
+                      aria-label="Select all rows"
+                      />
+                  </th>
+                }
+                @for (column of _columns(); track column) {
+                  <th [class]="getColumnClasses(column)">
+                    @if (column.sortable) {
+                      <button
+                        type="button"
+                        class="sort-btn"
+                        (click)="onSort(column)"
+                        >
+                        <span>{{ column.header }}</span>
+                        <span class="sort-indicators" aria-hidden="true">
+                          <span [class.active]="isSortActive(column, 'asc')">↑</span>
+                          <span [class.active]="isSortActive(column, 'desc')">↓</span>
+                        </span>
+                      </button>
+                    } @else {
+                      <span>{{ column.header }}</span>
+                    }
+                  </th>
+                }
+                @if (_showActions()) {
+                  <th class="actions-column">Actions</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of _data(); track trackByFn($index, item)) {
+                <tr
+                  [class.selected]="isSelected(item)"
+                  [class.clickable]="_clickable()"
+                  [attr.tabindex]="_clickable() ? 0 : null"
+                  (click)="onRowClick(item)"
+                  (keydown.enter)="onRowActivate($event, item)"
+                  (keydown.space)="onRowActivate($event, item)"
                   >
-                    {{ formatToken(getItemValue(item, column.key)) }}
-                  </span>
-                  <span
-                    *ngSwitchCase="'priority'"
-                    class="badge"
-                    [ngClass]="getPriorityClass(getItemValue(item, column.key))"
-                  >
-                    {{ formatToken(getItemValue(item, column.key)) }}
-                  </span>
-                  <span
-                    *ngSwitchCase="'severity'"
-                    class="badge"
-                    [ngClass]="getPriorityClass(getItemValue(item, column.key))"
-                  >
-                    {{ formatToken(getItemValue(item, column.key)) }}
-                  </span>
-                  <span *ngSwitchCase="'createdAt'">
-                    {{ getItemValue(item, column.key) | date : 'MMM d, y, h:mm a' }}
-                  </span>
-                  <span *ngSwitchCase="'updatedAt'">
-                    {{ getItemValue(item, column.key) | date : 'MMM d, y, h:mm a' }}
-                  </span>
-                  <span *ngSwitchCase="'timestamp'">
-                    {{ getItemValue(item, column.key) | date : 'MMM d, y, h:mm a' }}
-                  </span>
-                  <span *ngSwitchCase="'amount'">
-                    {{ formatAmount(getItemValue(item, column.key)) }}
-                  </span>
-                  <span *ngSwitchCase="'isEnabled'">
-                    {{ getItemValue(item, column.key) ? 'Yes' : 'No' }}
-                  </span>
-                  <span *ngSwitchDefault>{{ formatToken(getItemValue(item, column.key)) }}</span>
-                </ng-container>
-              </td>
-              <td *ngIf="_showActions()" class="actions-column">
-                <ng-content select="[slot=row-actions]"></ng-content>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="empty-state" *ngIf="!_loading() && _data().length === 0">
-        <h3>Nothing to show</h3>
-        <p>{{ _emptyMessage() }}</p>
-      </div>
-
-      <div class="table-pagination" *ngIf="_pagination()">
-        <div class="pagination-info">
-          <span>
-            Showing {{ getStartIndex() }} to {{ getEndIndex() }} of {{ totalItems() }} entries
-          </span>
+                  @if (_selectable()) {
+                    <td class="select-column">
+                      <input
+                        type="checkbox"
+                        [checked]="isSelected(item)"
+                        (change)="toggleSelect(item)"
+                        (click)="$event.stopPropagation()"
+                        [attr.aria-label]="'Select ' + rowLabel(item)"
+                        />
+                    </td>
+                  }
+                  @for (column of _columns(); track column) {
+                    <td [class]="getColumnClasses(column)">
+                      @switch (column.key) {
+                        @case ('status') {
+                          <span
+                            class="badge"
+                            [ngClass]="getStatusClass(getItemValue(item, column.key))"
+                            >
+                            {{ formatToken(getItemValue(item, column.key)) }}
+                          </span>
+                        }
+                        @case ('priority') {
+                          <span
+                            class="badge"
+                            [ngClass]="getPriorityClass(getItemValue(item, column.key))"
+                            >
+                            {{ formatToken(getItemValue(item, column.key)) }}
+                          </span>
+                        }
+                        @case ('severity') {
+                          <span
+                            class="badge"
+                            [ngClass]="getPriorityClass(getItemValue(item, column.key))"
+                            >
+                            {{ formatToken(getItemValue(item, column.key)) }}
+                          </span>
+                        }
+                        @case ('createdAt') {
+                          <span>
+                            {{ getItemValue(item, column.key) | date : 'MMM d, y, h:mm a' }}
+                          </span>
+                        }
+                        @case ('updatedAt') {
+                          <span>
+                            {{ getItemValue(item, column.key) | date : 'MMM d, y, h:mm a' }}
+                          </span>
+                        }
+                        @case ('timestamp') {
+                          <span>
+                            {{ getItemValue(item, column.key) | date : 'MMM d, y, h:mm a' }}
+                          </span>
+                        }
+                        @case ('amount') {
+                          <span>
+                            {{ formatAmount(getItemValue(item, column.key)) }}
+                          </span>
+                        }
+                        @case ('isEnabled') {
+                          <span>
+                            {{ getItemValue(item, column.key) ? 'Yes' : 'No' }}
+                          </span>
+                        }
+                        @default {
+                          <span>{{ formatToken(getItemValue(item, column.key)) }}</span>
+                        }
+                      }
+                    </td>
+                  }
+                  @if (_showActions()) {
+                    <td class="actions-column">
+                      <ng-content select="[slot=row-actions]"></ng-content>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
-        <div class="pagination-controls">
-          <button
-            class="btn btn-sm"
-            [disabled]="currentPage() <= 1"
-            (click)="goToPage(currentPage() - 1)"
-          >
-            Previous
-          </button>
-          <button
-            class="btn btn-sm"
-            [disabled]="currentPage() >= totalPages()"
-            (click)="goToPage(currentPage() + 1)"
-          >
-            Next
-          </button>
+      }
+    
+      @if (!_loading() && _data().length === 0) {
+        <div class="empty-state">
+          <h3>Nothing to show</h3>
+          <p>{{ _emptyMessage() }}</p>
         </div>
-      </div>
+      }
+    
+      @if (_pagination()) {
+        <div class="table-pagination">
+          <div class="pagination-info">
+            <span>
+              Showing {{ getStartIndex() }} to {{ getEndIndex() }} of {{ totalItems() }} entries
+            </span>
+          </div>
+          <div class="pagination-controls">
+            <button
+              class="btn btn-sm"
+              [disabled]="currentPage() <= 1"
+              (click)="goToPage(currentPage() - 1)"
+              >
+              Previous
+            </button>
+            <button
+              class="btn btn-sm"
+              [disabled]="currentPage() >= totalPages()"
+              (click)="goToPage(currentPage() + 1)"
+              >
+              Next
+            </button>
+          </div>
+        </div>
+      }
     </div>
-  `,
+    `,
   styles: [
     `
       .table-container {

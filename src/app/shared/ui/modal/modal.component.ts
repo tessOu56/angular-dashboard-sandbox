@@ -1,12 +1,12 @@
 import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { trigger, transition, style, animate, state } from '@angular/animations';
 import { ButtonComponent } from '../button/button.component';
 
 @Component({
   selector: 'app-modal',
   standalone: true,
-  imports: [CommonModule, ButtonComponent],
+  imports: [ButtonComponent],
   animations: [
     trigger('modalAnimation', [
       transition(':enter', [
@@ -26,45 +26,52 @@ import { ButtonComponent } from '../button/button.component';
     ]),
   ],
   template: `
-    <div
-      *ngIf="isOpen"
-      class="modal-overlay"
-      [@modalAnimation]
-      (click)="onOverlayClick()"
-      role="dialog"
-      aria-modal="true"
-      [attr.aria-labelledby]="title ? 'modal-title' : null"
-    >
+    @if (isOpen) {
       <div
-        class="modal-content"
-        [class]="'size-' + size"
-        [@contentAnimation]
-        (click)="$event.stopPropagation()"
-      >
-        <!-- Header -->
-        <div class="modal-header" *ngIf="showHeader">
-          <h2 id="modal-title" class="modal-title">{{ title }}</h2>
-          <button *ngIf="dismissible" class="modal-close" (click)="close()" aria-label="Close dialog">
-            ✕
-          </button>
-        </div>
-
-        <!-- Body -->
-        <div class="modal-body">
-          <ng-content></ng-content>
-        </div>
-
-        <!-- Footer -->
-        <div class="modal-footer" *ngIf="showFooter">
-          <ng-content select="[modal-footer]"></ng-content>
-          <div *ngIf="!hasFooterContent" class="default-footer">
-            <app-button variant="outline" (onClick)="close()">Cancel</app-button>
-            <app-button variant="primary" (onClick)="confirm()">Confirm</app-button>
+        class="modal-overlay"
+        [@modalAnimation]
+        (click)="onOverlayClick()"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-labelledby]="title ? 'modal-title' : null"
+        >
+        <div
+          class="modal-content"
+          [class]="'size-' + size"
+          [@contentAnimation]
+          (click)="$event.stopPropagation()"
+          >
+          <!-- Header -->
+          @if (showHeader) {
+            <div class="modal-header">
+              <h2 id="modal-title" class="modal-title">{{ title }}</h2>
+              @if (dismissible) {
+                <button class="modal-close" (click)="close()" aria-label="Close dialog">
+                  ✕
+                </button>
+              }
+            </div>
+          }
+          <!-- Body -->
+          <div class="modal-body">
+            <ng-content></ng-content>
           </div>
+          <!-- Footer -->
+          @if (showFooter) {
+            <div class="modal-footer">
+              <ng-content select="[modal-footer]"></ng-content>
+              @if (!hasFooterContent) {
+                <div class="default-footer">
+                  <app-button variant="outline" (onClick)="close()">Cancel</app-button>
+                  <app-button variant="primary" (onClick)="confirm()">Confirm</app-button>
+                </div>
+              }
+            </div>
+          }
         </div>
       </div>
-    </div>
-  `,
+    }
+    `,
   styles: [
     `
       .modal-overlay {

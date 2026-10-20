@@ -1,12 +1,12 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ToastService, Toast } from './toast.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-toast',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   animations: [
     trigger('toastAnimation', [
       transition(':enter', [
@@ -20,28 +20,32 @@ import { trigger, transition, style, animate } from '@angular/animations';
   ],
   template: `
     <div class="toast-container">
-      <div
-        *ngFor="let toast of toastService.toasts()"
-        class="toast"
-        [class]="'toast-' + toast.type"
-        [@toastAnimation]
-      >
-        <div class="toast-icon">{{ getIcon(toast.type) }}</div>
-        <div class="toast-content">
-          <div class="toast-title">{{ toast.title }}</div>
-          <div *ngIf="toast.message" class="toast-message">{{ toast.message }}</div>
+      @for (toast of toastService.toasts(); track toast) {
+        <div
+          class="toast"
+          [class]="'toast-' + toast.type"
+          [@toastAnimation]
+          >
+          <div class="toast-icon">{{ getIcon(toast.type) }}</div>
+          <div class="toast-content">
+            <div class="toast-title">{{ toast.title }}</div>
+            @if (toast.message) {
+              <div class="toast-message">{{ toast.message }}</div>
+            }
+          </div>
+          @if (toast.dismissible) {
+            <button
+              class="toast-dismiss"
+              (click)="toastService.dismiss(toast.id)"
+              aria-label="Dismiss"
+              >
+              ✕
+            </button>
+          }
         </div>
-        <button
-          *ngIf="toast.dismissible"
-          class="toast-dismiss"
-          (click)="toastService.dismiss(toast.id)"
-          aria-label="Dismiss"
-        >
-          ✕
-        </button>
-      </div>
+      }
     </div>
-  `,
+    `,
   styles: [
     `
       .toast-container {

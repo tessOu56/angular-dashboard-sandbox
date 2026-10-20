@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
@@ -10,7 +10,7 @@ import { sdk, Permission, AuditLog } from '../../../../shared/sdk';
 @Component({
   selector: 'app-audit-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TableComponent, HasPermDirective],
+  imports: [RouterModule, FormsModule, TableComponent, HasPermDirective],
   template: `
     <div class="page">
       <header class="page-header">
@@ -25,12 +25,12 @@ import { sdk, Permission, AuditLog } from '../../../../shared/sdk';
             class="btn btn-primary"
             (click)="exportLogs()"
             [disabled]="loading()"
-          >
+            >
             Export CSV
           </button>
         </div>
       </header>
-
+    
       <div class="toolbar">
         <div class="filter-field">
           <label for="audit-user">User</label>
@@ -40,7 +40,7 @@ import { sdk, Permission, AuditLog } from '../../../../shared/sdk';
             [(ngModel)]="filters.userId"
             (input)="applyFilters()"
             placeholder="User id"
-          />
+            />
         </div>
         <div class="filter-field">
           <label for="audit-action">Action</label>
@@ -80,7 +80,7 @@ import { sdk, Permission, AuditLog } from '../../../../shared/sdk';
         <button type="button" class="btn" (click)="clearFilters()">Clear</button>
         <button type="button" class="btn" (click)="refresh()">Refresh</button>
       </div>
-
+    
       <div class="stat-grid">
         <div class="stat-card">
           <h3>Rows</h3>
@@ -99,9 +99,11 @@ import { sdk, Permission, AuditLog } from '../../../../shared/sdk';
           <div class="stat-value">{{ actionTypes() }}</div>
         </div>
       </div>
-
-      <p *ngIf="error()" class="error-state" role="alert">{{ error() }}</p>
-
+    
+      @if (error()) {
+        <p class="error-state" role="alert">{{ error() }}</p>
+      }
+    
       <div class="surface">
         <app-table
           [data]="auditLogs()"
@@ -113,7 +115,7 @@ import { sdk, Permission, AuditLog } from '../../../../shared/sdk';
         ></app-table>
       </div>
     </div>
-  `,
+    `,
 })
 export class AuditListComponent implements OnInit {
   private router = inject(Router);
