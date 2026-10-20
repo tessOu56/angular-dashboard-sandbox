@@ -1,46 +1,34 @@
-import {
-  Directive,
-  Input,
-  TemplateRef,
-  ViewContainerRef,
-  OnInit,
-  OnDestroy,
-  inject,
-} from '@angular/core';
+import { Directive, TemplateRef, ViewContainerRef, effect, inject, input } from '@angular/core';
 import { PermissionService } from '../../core/auth/permission.service';
 
 @Directive({
   selector: '[hasPerm]',
   standalone: true,
 })
-export class HasPermDirective implements OnInit, OnDestroy {
-  private templateRef = inject(TemplateRef<any>);
-  private viewContainer = inject(ViewContainerRef);
-  private permissionService = inject(PermissionService);
+export class HasPermDirective {
+  private readonly templateRef = inject(TemplateRef<unknown>);
+  private readonly viewContainer = inject(ViewContainerRef);
+  private readonly permissionService = inject(PermissionService);
+
+  readonly hasPerm = input<string | string[]>([]);
 
   private hasView = false;
-  private permissions: string[] = [];
 
-  @Input() set hasPerm(permissions: string | string[]) {
-    this.permissions = Array.isArray(permissions) ? permissions : [permissions];
-    this.updateView();
+  constructor() {
+    effect(() => {
+      const raw = this.hasPerm();
+      const permissions = Array.isArray(raw) ? raw : [raw];
+      this.updateView(permissions);
+    });
   }
 
-  ngOnInit(): void {
-    this.updateView();
-  }
-
-  ngOnDestroy(): void {
-    // 清理工作
-  }
-
-  private updateView(): void {
-    if (!this.permissions || this.permissions.length === 0) {
+  private updateView(permissions: string[]): void {
+    if (!permissions.length) {
       this.show();
       return;
     }
 
-    const hasPermission = this.permissionService.hasAnyPermission(this.permissions);
+    const hasPermission = this.permissionService.hasAnyPermission(permissions);
 
     if (hasPermission && !this.hasView) {
       this.show();
@@ -50,6 +38,9 @@ export class HasPermDirective implements OnInit, OnDestroy {
   }
 
   private show(): void {
+    if (this.hasView) {
+      return;
+    }
     this.viewContainer.createEmbeddedView(this.templateRef);
     this.hasView = true;
   }

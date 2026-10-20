@@ -1,11 +1,10 @@
-import { CommonModule } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
 import { BarDatum, maxValue } from './chart-stats';
 
 @Component({
   selector: 'app-slice-charts',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="charts" data-testid="slice-charts">
       <section class="chart-card" aria-labelledby="severity-chart-title">
@@ -15,49 +14,53 @@ import { BarDatum, maxValue } from './chart-stats';
           viewBox="0 0 320 140"
           role="img"
           aria-label="Event severity counts"
-        >
-          <ng-container *ngFor="let bar of severityBars(); let i = index">
-            <rect
-              [attr.x]="i * 80 + 18"
-              [attr.y]="barTop(bar.value, severityMax())"
-              width="44"
-              [attr.height]="barHeight(bar.value, severityMax())"
-              [attr.fill]="bar.color"
-              rx="4"
-            ></rect>
-            <text [attr.x]="i * 80 + 40" y="132" text-anchor="middle" class="tick">
-              {{ bar.label }}
-            </text>
-            <text
-              [attr.x]="i * 80 + 40"
-              [attr.y]="barTop(bar.value, severityMax()) - 6"
-              text-anchor="middle"
-              class="value"
-            >
-              {{ bar.value }}
-            </text>
-          </ng-container>
+          >
+          @for (bar of severityBars(); track bar.key; let i = $index) {
+              <rect
+                [attr.x]="i * 80 + 18"
+                [attr.y]="barTop(bar.value, severityMax())"
+                width="44"
+                [attr.height]="barHeight(bar.value, severityMax())"
+                [attr.fill]="bar.color"
+                rx="4"
+              ></rect>
+              <text [attr.x]="i * 80 + 40" y="132" text-anchor="middle" class="tick">
+                {{ bar.label }}
+              </text>
+              <text
+                [attr.x]="i * 80 + 40"
+                [attr.y]="barTop(bar.value, severityMax()) - 6"
+                text-anchor="middle"
+                class="value"
+                >
+                {{ bar.value }}
+              </text>
+          }
         </svg>
       </section>
-
+    
       <section class="chart-card" aria-labelledby="type-chart-title">
         <h3 id="type-chart-title">SSE event types</h3>
         <ul class="type-list">
-          <li *ngFor="let bar of typeBars()">
-            <span class="type-label">{{ bar.label }}</span>
-            <span class="type-track">
-              <span
-                class="type-fill"
-                [style.width.%]="typeWidth(bar.value)"
-                [style.background]="bar.color"
-              ></span>
-            </span>
-            <span class="type-value">{{ bar.value }}</span>
-          </li>
+          @for (bar of typeBars(); track bar.key) {
+            <li>
+              <span class="type-label">{{ bar.label }}</span>
+              <span class="type-track">
+                <span
+                  class="type-fill"
+                  [style.width.%]="typeWidth(bar.value)"
+                  [style.background]="bar.color"
+                ></span>
+              </span>
+              <span class="type-value">{{ bar.value }}</span>
+            </li>
+          }
         </ul>
-        <p *ngIf="typeBars().length === 0" class="empty">No SSE events yet.</p>
+        @if (typeBars().length === 0) {
+          <p class="empty">No SSE events yet.</p>
+        }
       </section>
-
+    
       <section class="chart-card" aria-labelledby="throughput-chart-title">
         <h3 id="throughput-chart-title">SSE throughput</h3>
         <svg
@@ -65,12 +68,12 @@ import { BarDatum, maxValue } from './chart-stats';
           viewBox="0 0 320 80"
           role="img"
           aria-label="Event throughput sparkline"
-        >
+          >
           <polyline [attr.points]="sparklinePoints()" fill="none" stroke="#1f4a42" stroke-width="2" />
         </svg>
       </section>
     </div>
-  `,
+    `,
   styles: [
     `
       .charts {

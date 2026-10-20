@@ -1,4 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import {
   sdk,
   Event,
@@ -118,7 +119,7 @@ export class EventsStore {
         ...this._filters(),
       };
 
-      const response = await sdk.events.list(params).toPromise();
+      const response = await firstValueFrom(sdk.events.list(params));
 
       if (response) {
         this._events.set(response.data);
@@ -133,7 +134,7 @@ export class EventsStore {
 
   async fetchEvent(id: string): Promise<Event | null> {
     try {
-      const event = await sdk.events.get(id).toPromise();
+      const event = await firstValueFrom(sdk.events.get(id));
       if (event) {
         // Update the event in the list
         this._events.update((events) => events.map((e) => (e.id === id ? event : e)));

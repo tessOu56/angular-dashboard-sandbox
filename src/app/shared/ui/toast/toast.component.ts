@@ -1,47 +1,40 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ToastService, Toast } from './toast.service';
-import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-toast',
   standalone: true,
-  imports: [CommonModule],
-  animations: [
-    trigger('toastAnimation', [
-      transition(':enter', [
-        style({ transform: 'translateX(100%)', opacity: 0 }),
-        animate('300ms ease-out', style({ transform: 'translateX(0)', opacity: 1 })),
-      ]),
-      transition(':leave', [
-        animate('200ms ease-in', style({ transform: 'translateX(100%)', opacity: 0 })),
-      ]),
-    ]),
-  ],
+  imports: [],
   template: `
     <div class="toast-container">
-      <div
-        *ngFor="let toast of toastService.toasts()"
-        class="toast"
-        [class]="'toast-' + toast.type"
-        [@toastAnimation]
-      >
-        <div class="toast-icon">{{ getIcon(toast.type) }}</div>
-        <div class="toast-content">
-          <div class="toast-title">{{ toast.title }}</div>
-          <div *ngIf="toast.message" class="toast-message">{{ toast.message }}</div>
+      @for (toast of toastService.toasts(); track toast.id) {
+        <div
+          class="toast"
+          [class]="'toast-' + toast.type"
+          animate.enter="toast-enter"
+          animate.leave="toast-leave"
+          >
+          <div class="toast-icon">{{ getIcon(toast.type) }}</div>
+          <div class="toast-content">
+            <div class="toast-title">{{ toast.title }}</div>
+            @if (toast.message) {
+              <div class="toast-message">{{ toast.message }}</div>
+            }
+          </div>
+          @if (toast.dismissible) {
+            <button
+              class="toast-dismiss"
+              (click)="toastService.dismiss(toast.id)"
+              aria-label="Dismiss"
+              >
+              ✕
+            </button>
+          }
         </div>
-        <button
-          *ngIf="toast.dismissible"
-          class="toast-dismiss"
-          (click)="toastService.dismiss(toast.id)"
-          aria-label="Dismiss"
-        >
-          ✕
-        </button>
-      </div>
+      }
     </div>
-  `,
+    `,
   styles: [
     `
       .toast-container {
@@ -118,6 +111,36 @@ import { trigger, transition, style, animate } from '@angular/animations';
 
       .toast-dismiss:hover {
         color: #374151;
+      }
+
+      @keyframes toast-in {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes toast-out {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+
+      .toast-enter {
+        animation: toast-in 300ms ease-out;
+      }
+
+      .toast-leave {
+        animation: toast-out 200ms ease-in;
       }
     `,
   ],

@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter } from 'rxjs';
@@ -9,7 +8,7 @@ import { Permission } from '../../shared/sdk';
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [CommonModule, RouterModule, HasPermDirective],
+  imports: [RouterModule, HasPermDirective],
   template: `
     <div class="shell">
       <header class="shell-bar">
@@ -17,7 +16,7 @@ import { Permission } from '../../shared/sdk';
           <span class="brand-mark" aria-hidden="true"></span>
           <span class="brand-copy">
             <span class="brand-name">Ops sandbox</span>
-            <span class="brand-meta">Angular 20 · mock data</span>
+            <span class="brand-meta">Angular 22 · mock data</span>
           </span>
         </a>
 

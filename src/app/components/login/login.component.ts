@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
@@ -19,7 +19,7 @@ interface DemoAccount {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   template: `
     <main id="main-content" class="auth-screen" tabindex="-1">
       <div class="auth-card">
@@ -28,7 +28,7 @@ interface DemoAccount {
         <p class="lede">
           Mock accounts only. Credentials never leave this browser and there is no live API.
         </p>
-
+    
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
           <div class="form-group">
             <label for="username">Username</label>
@@ -41,12 +41,14 @@ interface DemoAccount {
               [attr.aria-invalid]="showError('username')"
               [attr.aria-describedby]="showError('username') ? 'username-error' : null"
               [class.error]="showError('username')"
-            />
-            <div *ngIf="showError('username')" id="username-error" class="error-message">
-              Username is required
-            </div>
+              />
+            @if (showError('username')) {
+              <div id="username-error" class="error-message">
+                Username is required
+              </div>
+            }
           </div>
-
+    
           <div class="form-group">
             <label for="password">Password</label>
             <input
@@ -58,40 +60,46 @@ interface DemoAccount {
               [attr.aria-invalid]="showError('password')"
               [attr.aria-describedby]="showError('password') ? 'password-error' : null"
               [class.error]="showError('password')"
-            />
-            <div *ngIf="showError('password')" id="password-error" class="error-message">
-              Password is required
+              />
+            @if (showError('password')) {
+              <div id="password-error" class="error-message">
+                Password is required
+              </div>
+            }
+          </div>
+    
+          @if (errorMessage()) {
+            <div id="login-error" class="error-message" role="alert">
+              {{ errorMessage() }}
             </div>
-          </div>
-
-          <div *ngIf="errorMessage()" id="login-error" class="error-message" role="alert">
-            {{ errorMessage() }}
-          </div>
-
+          }
+    
           <button
             type="submit"
             class="btn btn-primary login-submit"
             [disabled]="loginForm.invalid || loading()"
             [attr.aria-busy]="loading()"
-          >
+            >
             {{ loading() ? 'Signing in…' : 'Sign in' }}
           </button>
         </form>
-
+    
         <section class="demo-accounts" aria-labelledby="demo-heading">
           <h2 id="demo-heading">Demo accounts (in-browser only)</h2>
           <ul>
-            <li *ngFor="let account of demoAccounts">
-              <button type="button" (click)="fillDemo(account)">
-                <span class="demo-id">{{ account.username }}</span>
-                <span class="demo-meta">{{ account.role }} · {{ account.note }}</span>
-              </button>
-            </li>
+            @for (account of demoAccounts; track account) {
+              <li>
+                <button type="button" (click)="fillDemo(account)">
+                  <span class="demo-id">{{ account.username }}</span>
+                  <span class="demo-meta">{{ account.role }} · {{ account.note }}</span>
+                </button>
+              </li>
+            }
           </ul>
         </section>
       </div>
     </main>
-  `,
+    `,
   styles: [
     `
       .login-submit {

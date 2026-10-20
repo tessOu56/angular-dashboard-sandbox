@@ -1,13 +1,12 @@
 import {
   Component,
   Input,
-  Output,
-  EventEmitter,
   signal,
   computed,
-  TemplateRef,
+  input,
+  output
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VirtualScrollComponent } from '../virtual-scroll/virtual-scroll.component';
 import { TableColumn } from '../../../../shared/sdk';
@@ -21,95 +20,109 @@ import { TableColumn } from '../../../../shared/sdk';
 @Component({
   selector: 'app-data-grid',
   standalone: true,
-  imports: [CommonModule, FormsModule, VirtualScrollComponent],
+  imports: [FormsModule, VirtualScrollComponent, NgTemplateOutlet],
   template: `
     <div class="data-grid">
       <!-- Header -->
       <div class="grid-header">
         <div class="grid-row header-row">
-          <div *ngIf="selectable" class="grid-cell header-cell checkbox-cell">
-            <input
-              type="checkbox"
-              [checked]="allSelected()"
-              [indeterminate]="someSelected()"
-              (change)="toggleSelectAll()"
-              aria-label="全選"
-            />
-          </div>
-          <div
-            *ngFor="let column of columns"
-            class="grid-cell header-cell"
-            [class.sortable]="column.sortable"
-            [style.width]="column.width"
-            [style.text-align]="column.align || 'left'"
-            (click)="column.sortable && sort(column.key)"
-          >
-            <div class="header-content">
-              <span>{{ column.header }}</span>
-              <span *ngIf="column.sortable" class="sort-indicator">
-                <span *ngIf="sortColumn() === column.key">
-                  {{ sortDirection() === 'asc' ? '▲' : '▼' }}
-                </span>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Body with Virtual Scroll -->
-      <div class="grid-body" [style.height.px]="height">
-        <app-virtual-scroll
-          [items]="sortedData()"
-          [itemHeight]="rowHeight"
-          [bufferSize]="bufferSize"
-          [itemTemplate]="rowTemplate"
-          (scrollEnd)="onScrollEnd()"
-        >
-        </app-virtual-scroll>
-
-        <ng-template #rowTemplate let-item let-index="index">
-          <div class="grid-row" [class.selected]="isSelected(item)" (click)="onRowClick(item)">
-            <div *ngIf="selectable" class="grid-cell checkbox-cell">
+          @if (selectable()) {
+            <div class="grid-cell header-cell checkbox-cell">
               <input
                 type="checkbox"
-                [checked]="isSelected(item)"
-                (change)="toggleSelection(item); $event.stopPropagation()"
-                [attr.aria-label]="'選擇第 ' + (index + 1) + ' 列'"
-              />
+                [checked]="allSelected()"
+                [indeterminate]="someSelected()"
+                (change)="toggleSelectAll()"
+                aria-label="全選"
+                />
             </div>
+          }
+          @for (column of columns; track column) {
             <div
-              *ngFor="let column of columns"
-              class="grid-cell"
+              class="grid-cell header-cell"
+              [class.sortable]="column.sortable"
               [style.width]="column.width"
               [style.text-align]="column.align || 'left'"
-            >
-              <ng-container *ngIf="column.template; else defaultCell">
-                <ng-container
-                  *ngTemplateOutlet="column.template; context: { $implicit: item, column: column }"
-                ></ng-container>
-              </ng-container>
-              <ng-template #defaultCell>
-                <span>{{ getCellValue(item, column) }}</span>
-              </ng-template>
+              (click)="column.sortable && sort(column.key)"
+              >
+              <div class="header-content">
+                <span>{{ column.header }}</span>
+                @if (column.sortable) {
+                  <span class="sort-indicator">
+                    @if (sortColumn() === column.key) {
+                      <span>
+                        {{ sortDirection() === 'asc' ? '▲' : '▼' }}
+                      </span>
+                    }
+                  </span>
+                }
+              </div>
             </div>
+          }
+        </div>
+      </div>
+    
+      <!-- Body with Virtual Scroll -->
+      <div class="grid-body" [style.height.px]="height()">
+        <app-virtual-scroll
+          [items]="sortedData()"
+          [itemHeight]="rowHeight()"
+          [bufferSize]="bufferSize()"
+          [itemTemplate]="rowTemplate"
+          (scrollEnd)="onScrollEnd()"
+          >
+        </app-virtual-scroll>
+    
+        <ng-template #rowTemplate let-item let-index="index">
+          <div class="grid-row" [class.selected]="isSelected(item)" (click)="onRowClick(item)">
+            @if (selectable()) {
+              <div class="grid-cell checkbox-cell">
+                <input
+                  type="checkbox"
+                  [checked]="isSelected(item)"
+                  (change)="toggleSelection(item); $event.stopPropagation()"
+                  [attr.aria-label]="'選擇第 ' + (index + 1) + ' 列'"
+                  />
+              </div>
+            }
+            @for (column of columns; track column) {
+              <div
+                class="grid-cell"
+                [style.width]="column.width"
+                [style.text-align]="column.align || 'left'"
+                >
+                @if (column.template) {
+                  <ng-container
+                    [ngTemplateOutlet]="column.template"
+                    [ngTemplateOutletContext]="{ $implicit: item, column: column }"
+                  ></ng-container>
+                } @else {
+                  <span>{{ getCellValue(item, column) }}</span>
+                }
+              </div>
+            }
           </div>
         </ng-template>
       </div>
-
+    
       <!-- Empty State -->
-      <div *ngIf="data.length === 0 && !loading" class="empty-state">
-        <div class="empty-icon">📭</div>
-        <h3>無資料</h3>
-        <p>{{ emptyMessage }}</p>
-      </div>
-
+      @if (data.length === 0 && !loading) {
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <h3>無資料</h3>
+          <p>{{ emptyMessage() }}</p>
+        </div>
+      }
+    
       <!-- Loading State -->
-      <div *ngIf="loading" class="loading-state">
-        <div class="spinner"></div>
-        <p>載入中...</p>
-      </div>
+      @if (loading) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>載入中...</p>
+        </div>
+      }
     </div>
-  `,
+    `,
   styles: [
     `
       .data-grid {
@@ -262,16 +275,19 @@ export class DataGridComponent<T = any> {
     return this._loading();
   }
 
-  @Input() height: number = 600; // Grid height
-  @Input() rowHeight: number = 50; // Row height for virtual scroll
-  @Input() bufferSize: number = 5; // Buffer size for virtual scroll
-  @Input() selectable: boolean = false;
-  @Input() emptyMessage: string = '目前沒有資料';
+  readonly height = input<number>(600); // Grid height
+  readonly rowHeight = input<number>(50); // Row height for virtual scroll
+  readonly bufferSize = input<number>(5); // Buffer size for virtual scroll
+  readonly selectable = input<boolean>(false);
+  readonly emptyMessage = input<string>('目前沒有資料');
 
-  @Output() rowClick = new EventEmitter<T>();
-  @Output() selectionChange = new EventEmitter<T[]>();
-  @Output() sortChange = new EventEmitter<{ column: string; direction: 'asc' | 'desc' }>();
-  @Output() scrollEnd = new EventEmitter<void>();
+  readonly rowClick = output<T>();
+  readonly selectionChange = output<T[]>();
+  readonly sortChange = output<{
+    column: string;
+    direction: 'asc' | 'desc';
+}>();
+  readonly scrollEnd = output<void>();
 
   private _data = signal<T[]>([]);
   private _columns = signal<TableColumn<T>[]>([]);

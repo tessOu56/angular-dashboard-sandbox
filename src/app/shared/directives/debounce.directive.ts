@@ -1,4 +1,4 @@
-import { Directive, EventEmitter, Input, Output, OnDestroy } from '@angular/core';
+import { Directive, OnDestroy, input, output } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
@@ -17,15 +17,15 @@ import { debounceTime } from 'rxjs/operators';
   },
 })
 export class DebounceDirective implements OnDestroy {
-  @Input() debounceTime: number = 300;
-  @Output() debounced = new EventEmitter<Event>();
+  readonly debounceTime = input<number>(300);
+  readonly debounced = output<Event>();
 
   private inputSubject = new Subject<Event>();
   private subscription: Subscription;
 
   constructor() {
     this.subscription = this.inputSubject
-      .pipe(debounceTime(this.debounceTime))
+      .pipe(debounceTime(this.debounceTime()))
       .subscribe((event) => this.debounced.emit(event));
   }
 

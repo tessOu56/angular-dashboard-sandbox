@@ -3,210 +3,208 @@ import { ApprovalsStore } from './approvals.store';
 import { ApprovalRequest, ApprovalStatus, Priority, RequestType } from '../../shared/sdk';
 
 describe('ApprovalsStore', () => {
-  let store: ApprovalsStore;
+    let store: ApprovalsStore;
 
-  const mockApprovals: ApprovalRequest[] = [
-    {
-      id: '1',
-      title: 'Test Approval 1',
-      description: 'Description 1',
-      requestType: RequestType.EXPENSE,
-      requesterId: 'user1',
-      requesterName: 'User One',
-      department: 'IT',
-      amount: 1000,
-      priority: Priority.HIGH,
-      status: ApprovalStatus.PENDING,
-      approvals: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: '2',
-      title: 'Test Approval 2',
-      description: 'Description 2',
-      requestType: RequestType.PURCHASE,
-      requesterId: 'user2',
-      requesterName: 'User Two',
-      department: 'Sales',
-      amount: 5000,
-      priority: Priority.URGENT,
-      status: ApprovalStatus.APPROVED,
-      approvals: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: '3',
-      title: 'Test Approval 3',
-      description: 'Description 3',
-      requestType: RequestType.TRAVEL,
-      requesterId: 'user1',
-      requesterName: 'User One',
-      department: 'IT',
-      amount: 2000,
-      priority: Priority.MEDIUM,
-      status: ApprovalStatus.REJECTED,
-      approvals: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-  ];
+    const mockApprovals: ApprovalRequest[] = [
+        {
+            id: '1',
+            title: 'Test Approval 1',
+            description: 'Description 1',
+            requestType: RequestType.EXPENSE,
+            requesterId: 'user1',
+            requesterName: 'User One',
+            department: 'IT',
+            amount: 1000,
+            priority: Priority.HIGH,
+            status: ApprovalStatus.PENDING,
+            approvals: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        },
+        {
+            id: '2',
+            title: 'Test Approval 2',
+            description: 'Description 2',
+            requestType: RequestType.PURCHASE,
+            requesterId: 'user2',
+            requesterName: 'User Two',
+            department: 'Sales',
+            amount: 5000,
+            priority: Priority.URGENT,
+            status: ApprovalStatus.APPROVED,
+            approvals: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        },
+        {
+            id: '3',
+            title: 'Test Approval 3',
+            description: 'Description 3',
+            requestType: RequestType.TRAVEL,
+            requesterId: 'user1',
+            requesterName: 'User One',
+            department: 'IT',
+            amount: 2000,
+            priority: Priority.MEDIUM,
+            status: ApprovalStatus.REJECTED,
+            approvals: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        },
+    ];
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
-    store = TestBed.inject(ApprovalsStore);
-  });
-
-  it('should be created', () => {
-    expect(store).toBeTruthy();
-  });
-
-  describe('initial state', () => {
-    it('should have empty approvals array', () => {
-      expect(store.approvals()).toEqual([]);
-    });
-
-    it('should not be loading', () => {
-      expect(store.loading()).toBe(false);
-    });
-
-    it('should have no error', () => {
-      expect(store.error()).toBeNull();
-    });
-
-    it('should have default pagination', () => {
-      const pagination = store.pagination();
-      expect(pagination.page).toBe(1);
-      expect(pagination.limit).toBe(10);
-    });
-  });
-
-  describe('computed signals', () => {
     beforeEach(() => {
-      // Manually set approvals for testing computed properties
-      (store as any)._approvals.set(mockApprovals);
+        TestBed.configureTestingModule({});
+        store = TestBed.inject(ApprovalsStore);
     });
 
-    it('should filter pending approvals', () => {
-      const pending = store.pendingApprovals();
-      expect(pending).toHaveSize(1);
-      expect(pending[0].status).toBe(ApprovalStatus.PENDING);
+    it('should be created', () => {
+        expect(store).toBeTruthy();
     });
 
-    it('should filter approved approvals', () => {
-      const approved = store.approvedApprovals();
-      expect(approved).toHaveSize(1);
-      expect(approved[0].status).toBe(ApprovalStatus.APPROVED);
+    describe('initial state', () => {
+        it('should have empty approvals array', () => {
+            expect(store.approvals()).toEqual([]);
+        });
+
+        it('should not be loading', () => {
+            expect(store.loading()).toBe(false);
+        });
+
+        it('should have no error', () => {
+            expect(store.error()).toBeNull();
+        });
+
+        it('should have default pagination', () => {
+            const pagination = store.pagination();
+            expect(pagination.page).toBe(1);
+            expect(pagination.limit).toBe(10);
+        });
     });
 
-    it('should filter rejected approvals', () => {
-      const rejected = store.rejectedApprovals();
-      expect(rejected).toHaveSize(1);
-      expect(rejected[0].status).toBe(ApprovalStatus.REJECTED);
+    describe('computed signals', () => {
+        beforeEach(() => {
+            // Manually set approvals for testing computed properties
+            (store as any)._approvals.set(mockApprovals);
+        });
+
+        it('should filter pending approvals', () => {
+            const pending = store.pendingApprovals();
+            expect(pending).toHaveLength(1);
+            expect(pending[0].status).toBe(ApprovalStatus.PENDING);
+        });
+
+        it('should filter approved approvals', () => {
+            const approved = store.approvedApprovals();
+            expect(approved).toHaveLength(1);
+            expect(approved[0].status).toBe(ApprovalStatus.APPROVED);
+        });
+
+        it('should filter rejected approvals', () => {
+            const rejected = store.rejectedApprovals();
+            expect(rejected).toHaveLength(1);
+            expect(rejected[0].status).toBe(ApprovalStatus.REJECTED);
+        });
+
+        it('should filter high priority approvals', () => {
+            const highPriority = store.highPriorityApprovals();
+            expect(highPriority).toHaveLength(2); // high + urgent
+            expect(highPriority.every((a) => ['high', 'urgent', 'critical'].includes(a.priority))).toBe(true);
+        });
     });
 
-    it('should filter high priority approvals', () => {
-      const highPriority = store.highPriorityApprovals();
-      expect(highPriority).toHaveSize(2); // high + urgent
-      expect(highPriority.every((a) => ['high', 'urgent', 'critical'].includes(a.priority))).toBe(
-        true
-      );
-    });
-  });
+    describe('setFilters', () => {
+        it('should set filters correctly', () => {
+            const filters = { status: [ApprovalStatus.PENDING] };
+            store.setFilters(filters);
 
-  describe('setFilters', () => {
-    it('should set filters correctly', () => {
-      const filters = { status: [ApprovalStatus.PENDING] };
-      store.setFilters(filters);
+            expect(store.filters()).toEqual(filters);
+        });
 
-      expect(store.filters()).toEqual(filters);
-    });
+        it('should reset page to 1 when setting filters', () => {
+            store.setPage(3);
+            store.setFilters({ status: [ApprovalStatus.PENDING] });
 
-    it('should reset page to 1 when setting filters', () => {
-      store.setPage(3);
-      store.setFilters({ status: [ApprovalStatus.PENDING] });
-
-      expect(store.pagination().page).toBe(1);
-    });
-  });
-
-  describe('clearFilters', () => {
-    it('should clear all filters', () => {
-      store.setFilters({ status: [ApprovalStatus.PENDING] });
-      store.clearFilters();
-
-      expect(store.filters()).toEqual({});
+            expect(store.pagination().page).toBe(1);
+        });
     });
 
-    it('should reset page to 1 when clearing filters', () => {
-      store.setPage(3);
-      store.clearFilters();
+    describe('clearFilters', () => {
+        it('should clear all filters', () => {
+            store.setFilters({ status: [ApprovalStatus.PENDING] });
+            store.clearFilters();
 
-      expect(store.pagination().page).toBe(1);
-    });
-  });
+            expect(store.filters()).toEqual({});
+        });
 
-  describe('pagination', () => {
-    it('should set page correctly', () => {
-      store.setPage(5);
-      expect(store.pagination().page).toBe(5);
-    });
+        it('should reset page to 1 when clearing filters', () => {
+            store.setPage(3);
+            store.clearFilters();
 
-    it('should set page size and reset to page 1', () => {
-      store.setPage(3);
-      store.setPageSize(20);
-
-      const pagination = store.pagination();
-      expect(pagination.limit).toBe(20);
-      expect(pagination.page).toBe(1);
-    });
-  });
-
-  describe('selection', () => {
-    it('should select approval', () => {
-      store.selectApproval('1');
-      expect(store.selectedApprovals()).toContain('1');
+            expect(store.pagination().page).toBe(1);
+        });
     });
 
-    it('should deselect approval', () => {
-      store.selectApproval('1');
-      store.deselectApproval('1');
-      expect(store.selectedApprovals()).not.toContain('1');
+    describe('pagination', () => {
+        it('should set page correctly', () => {
+            store.setPage(5);
+            expect(store.pagination().page).toBe(5);
+        });
+
+        it('should set page size and reset to page 1', () => {
+            store.setPage(3);
+            store.setPageSize(20);
+
+            const pagination = store.pagination();
+            expect(pagination.limit).toBe(20);
+            expect(pagination.page).toBe(1);
+        });
     });
 
-    it('should toggle approval selection', () => {
-      store.toggleApprovalSelection('1');
-      expect(store.selectedApprovals()).toContain('1');
+    describe('selection', () => {
+        it('should select approval', () => {
+            store.selectApproval('1');
+            expect(store.selectedApprovals()).toContain('1');
+        });
 
-      store.toggleApprovalSelection('1');
-      expect(store.selectedApprovals()).not.toContain('1');
+        it('should deselect approval', () => {
+            store.selectApproval('1');
+            store.deselectApproval('1');
+            expect(store.selectedApprovals()).not.toContain('1');
+        });
+
+        it('should toggle approval selection', () => {
+            store.toggleApprovalSelection('1');
+            expect(store.selectedApprovals()).toContain('1');
+
+            store.toggleApprovalSelection('1');
+            expect(store.selectedApprovals()).not.toContain('1');
+        });
+
+        it('should select all approvals', () => {
+            (store as any)._approvals.set(mockApprovals);
+            store.selectAllApprovals();
+
+            expect(store.selectedApprovals()).toHaveLength(mockApprovals.length);
+            expect(store.hasSelectedApprovals()).toBe(true);
+        });
+
+        it('should clear selection', () => {
+            store.selectApproval('1');
+            store.selectApproval('2');
+            store.clearSelection();
+
+            expect(store.selectedApprovals()).toEqual([]);
+            expect(store.hasSelectedApprovals()).toBe(false);
+        });
     });
 
-    it('should select all approvals', () => {
-      (store as any)._approvals.set(mockApprovals);
-      store.selectAllApprovals();
+    describe('clearError', () => {
+        it('should clear error', () => {
+            (store as any)._error.set('Test error');
+            store.clearError();
 
-      expect(store.selectedApprovals()).toHaveSize(mockApprovals.length);
-      expect(store.hasSelectedApprovals()).toBe(true);
+            expect(store.error()).toBeNull();
+        });
     });
-
-    it('should clear selection', () => {
-      store.selectApproval('1');
-      store.selectApproval('2');
-      store.clearSelection();
-
-      expect(store.selectedApprovals()).toEqual([]);
-      expect(store.hasSelectedApprovals()).toBe(false);
-    });
-  });
-
-  describe('clearError', () => {
-    it('should clear error', () => {
-      (store as any)._error.set('Test error');
-      store.clearError();
-
-      expect(store.error()).toBeNull();
-    });
-  });
 });

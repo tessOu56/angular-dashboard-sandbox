@@ -122,7 +122,7 @@ angular-app/
 import { sdk, Permission, User } from '../shared/sdk';
 
 // 使用 SDK
-const response = await sdk.approvals.list().toPromise();
+const response = await firstValueFrom(sdk.approvals.list());
 ```
 
 ### 2. 嚴謹 RBAC 系統
